@@ -46,12 +46,23 @@ Dlatego workflow startuje co 10 minut, ale skrypt **pracuje w pętli przez ~9 mi
 wykonując przebieg co 60 sekund (`--loop-minutes 9 --pass-seconds 60`). W każdym przebiegu
 sprawdzane są tylko te wpisy, którym minął ich własny `check_every_minutes`.
 
-Uczciwie o ograniczeniach: między końcem jednego uruchomienia a startem następnego zostaje
-przerwa (zwykle ~1 min, przy obciążeniu GitHuba dłuższa), a pojedyncze uruchomienie może
-zostać pominięte. Realny czas wykrycia awarii to **około 5–8 minut** zamiast dokładnie 5.
-Jeśli potrzebujesz twardej gwarancji, właściwym narzędziem jest zewnętrzny monitoring
-uptime lub własny serwer z cronem — GitHub Actions to rozwiązanie „wystarczająco dobre
-i darmowe", nie system o gwarantowanym czasie reakcji.
+Uczciwie o ograniczeniach: harmonogram GitHuba działa w trybie „best effort". W praktyce
+zadania planowane co 10 minut potrafią startować co 25–35 minut, a pojedyncze uruchomienia
+bywają pomijane — szczególnie w godzinach szczytu.
+
+Zastosowane środki zaradcze:
+
+- **cron na nierównych minutach** (`3,13,23,33,43,53`) zamiast `*/10`. Najwięcej zadań
+  na całym GitHubie startuje o pełnych dziesiątkach, więc kolejka jest wtedy najdłuższa.
+- **pętla dłuższa niż odstęp crona** (25 minut przy cronie co 10). Kolejne uruchomienia
+  czekają w kolejce dzięki `concurrency` i startują natychmiast po zakończeniu poprzedniego.
+  Dzięki temu nawet przy 30-minutowym opóźnieniu monitoring działa niemal bez przerw,
+  zamiast pracować 9 minut i milczeć przez 25.
+
+Nawet z tymi poprawkami nie jest to system o gwarantowanym czasie reakcji. Jeśli
+potrzebujesz twardej gwarancji „alarm w 5 minut", właściwym narzędziem jest zewnętrzny
+monitoring uptime albo własny serwer z cronem — GitHub Actions to rozwiązanie
+„wystarczająco dobre i darmowe".
 
 ⚠️ **Ten harmonogram wymaga repozytorium publicznego.** Pętla zużywa ~9 minut co 10 minut,
 czyli ~1300 minut dziennie. Darmowy limit dla repozytoriów prywatnych to 2000 minut
