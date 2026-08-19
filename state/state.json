@@ -1,10 +1,18 @@
 {
+  "checkout-dostepnosc": {
+    "consecutive_failures": 0,
+    "last_check": "2026-08-19T21:50:16+00:00",
+    "last_response_time": 2.39,
+    "last_status_code": 200,
+    "status": "up",
+    "url": "https://sklep.technica.pl/checkout"
+  },
   "kategoria-szafy-chlodnicze": {
     "consecutive_failures": 0,
     "content_changed_at": "2026-08-19T20:51:34+00:00",
     "content_hash": "c5936fd79ac6420955ca64c4faef046fcecbbf3a3a3fd85f8f009c6619df3537",
-    "last_check": "2026-08-19T21:14:58+00:00",
-    "last_response_time": 1.23,
+    "last_check": "2026-08-19T21:41:39+00:00",
+    "last_response_time": 0.96,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/szafy-chlodnicze"
@@ -20,11 +28,19 @@
       "godziny_infolinia": "8:00-17:00",
       "infolinia": "BRAK"
     },
-    "last_check": "2026-08-19T21:14:55+00:00",
-    "last_response_time": 1.11,
+    "last_check": "2026-08-19T21:41:37+00:00",
+    "last_response_time": 0.84,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/kontakt"
+  },
+  "koszyk-pusty": {
+    "consecutive_failures": 0,
+    "last_check": "2026-08-19T21:50:14+00:00",
+    "last_response_time": 1.85,
+    "last_status_code": 200,
+    "status": "up",
+    "url": "https://sklep.technica.pl/cart"
   },
   "produkt-450021": {
     "consecutive_failures": 0,
@@ -36,8 +52,8 @@
       "kod_produktu": "450021",
       "przycisk_koszyka": "Do koszyka"
     },
-    "last_check": "2026-08-19T21:14:56+00:00",
-    "last_response_time": 1.13,
+    "last_check": "2026-08-19T21:41:38+00:00",
+    "last_response_time": 0.67,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/barowa-witryna-chlodnicza-do-butelek-2-drzwiowa-drzwi-przesuwane-210-l-920x515x855-mm-technica-cold-line"
@@ -46,8 +62,8 @@
     "consecutive_failures": 0,
     "content_changed_at": "2026-08-19T20:51:31+00:00",
     "content_hash": "f44dbae4279cbf888b99d1dcf27ed7ec9b6293e3aa5e1ab0e4d8847e5eefae8e",
-    "last_check": "2026-08-19T21:14:54+00:00",
-    "last_response_time": 1.14,
+    "last_check": "2026-08-19T21:50:13+00:00",
+    "last_response_time": 0.87,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl"
