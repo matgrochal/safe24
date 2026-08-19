@@ -40,7 +40,7 @@ jobs:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
           TEAMS_PAYLOAD: adaptive
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: python monitor.py --TEST-ALERT
+        run: python monitor.py --test-alerts
 
       - name: Zapisz stan (hash + migawki treści)
         if: always()
