@@ -1,0 +1,52 @@
+name: Test powiadomień
+
+# Ten workflow NIE uruchamia się sam — tylko ręcznie, przyciskiem "Run workflow".
+# Służy do sprawdzenia, czy kanały powiadomień są poprawnie skonfigurowane.
+
+on:
+  workflow_dispatch:
+    inputs:
+      wyslij_sms:
+        description: "Wysłać także SMS? (UWAGA: to prawdziwa, płatna wiadomość)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read              # ten workflow niczego nie zapisuje do repozytorium
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Ustaw Pythona
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Zainstaluj zależności
+        run: pip install -r requirements.txt
+
+      - name: Wyślij wiadomość testową
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          TEAMS_PAYLOAD: adaptive
+          SMSAPI_TOKEN: ${{ secrets.SMSAPI_TOKEN }}
+          SMSAPI_TO: ${{ secrets.SMSAPI_TO }}
+          SMSAPI_FROM: ${{ secrets.SMSAPI_FROM }}
+        run: |
+          if [ "${{ inputs.wyslij_sms }}" = "true" ]; then
+            echo "Test wszystkich kanałów, łącznie z SMS."
+            python monitor.py --test-alerts --with-sms
+          else
+            echo "Test kanałów bez SMS (Teams, Discord, Telegram)."
+            python monitor.py --test-alerts
+          fi
