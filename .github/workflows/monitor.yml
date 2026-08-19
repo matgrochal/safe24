@@ -2,22 +2,24 @@ name: Monitor sklep.technica.pl
 
 on:
   schedule:
-    # co 15 minut (czas UTC). GitHub bywa obciążony i potrafi opóźnić start
-    # zadania cron o kilka–kilkanaście minut — to normalne dla darmowego planu.
-    - cron: "*/15 * * * *"
-  workflow_dispatch:          # pozwala uruchomić ręcznie z zakładki Actions
+    # Uruchomienie co 10 minut, a wewnątrz jednego uruchomienia skrypt pracuje
+    # w pętli przez ~9 minut, sprawdzając strony co 60 sekund. Dzięki temu
+    # realna rozdzielczość monitoringu to 1 minuta, a nie 10 — GitHub nie
+    # pozwala planować zadań częściej niż co 5 minut i bywa mocno opóźniony.
+    - cron: "*/10 * * * *"
+  workflow_dispatch:          # ręczne uruchomienie z zakładki Actions
 
 permissions:
-  contents: write             # potrzebne, aby zapisać state/ z powrotem do repo
+  contents: write             # potrzebne do zapisania state/ z powrotem do repo
 
 concurrency:
-  group: technica-monitor      # nigdy dwa biegi naraz (uniknięcie konfliktów push)
+  group: technica-monitor     # nigdy dwa biegi naraz
   cancel-in-progress: false
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 14
 
     steps:
       - name: Pobierz repozytorium
@@ -32,17 +34,20 @@ jobs:
       - name: Zainstaluj zależności
         run: pip install -r requirements.txt
 
-      - name: Sprawdź 4 adresy sklepu
+      - name: Monitoruj sklep przez ~9 minut
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
           TEAMS_PAYLOAD: adaptive
+          SMSAPI_TOKEN: ${{ secrets.SMSAPI_TOKEN }}
+          SMSAPI_TO: ${{ secrets.SMSAPI_TO }}
+          SMSAPI_FROM: ${{ secrets.SMSAPI_FROM }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: python monitor.py
+        run: python monitor.py --loop-minutes 9 --pass-seconds 60
 
-      - name: Zapisz stan (hash + migawki treści)
+      - name: Zapisz stan (hash, migawki, historia awarii)
         if: always()
         run: |
           git config user.name  "github-actions[bot]"
