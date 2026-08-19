@@ -482,11 +482,51 @@ def notify_teams(event: dict) -> None:
     _post(url, "Teams (Adaptive Card)", json=payload)
 
 
+# Najczęstsze kody błędów SMSAPI wraz z podpowiedzią, co zrobić
+SMSAPI_ERRORS = {
+    8:   "Błąd w odwołaniu do API (po stronie SMSAPI). Spróbuj ponownie za chwilę.",
+    11:  "Treść wiadomości jest pusta albo za długa.",
+    13:  "Nieprawidłowy numer odbiorcy w SMSAPI_TO. Format: 48500100200 "
+         "(prefiks kraju, bez plusa i spacji). Numer może też być na czarnej liście.",
+    14:  "Nieprawidłowe pole nadawcy (SMSAPI_FROM). Nazwa musi być wcześniej dodana "
+         "i ZATWIERDZONA w panelu SMSAPI: Ustawienia → Pola nadawcy. Maksymalnie 11 znaków, "
+         "tylko a-z A-Z 0-9 kropka myślnik spacja, bez polskich znaków. "
+         "Zatwierdzanie odbywa się ręcznie w godzinach pracy biura SMSAPI (pn-pt 8-17).",
+    101: "Nieprawidłowy token (SMSAPI_TOKEN) albo token z konta .com użyty na api.smsapi.pl.",
+    103: "Za mało punktów na koncie SMSAPI — doładuj konto.",
+    105: "Adres IP zablokowany w ustawieniach tokena. Wyłącz filtr IP albo dodaj "
+         "zakresy adresów GitHub Actions (są zmienne, więc filtr IP zwykle się tu nie sprawdza).",
+}
+
+
+def _send_sms_request(data: dict, headers: dict) -> tuple[bool, int | None]:
+    """Zwraca (sukces, kod_błędu_SMSAPI). Przy awarii próbuje adresu zapasowego."""
+    for url in ("https://api.smsapi.pl/sms.do", "https://api2.smsapi.pl/sms.do"):
+        try:
+            r = requests.post(url, data=data, headers=headers, timeout=20)
+            payload = r.json() if r.headers.get("Content-Type", "").startswith("application/json") \
+                else {"raw": r.text[:300]}
+            if r.status_code == 200 and "error" not in payload:
+                print(f"[+] SMS: wysłano ({payload.get('count', '?')} wiadomości).")
+                return True, None
+            code = payload.get("error") if isinstance(payload, dict) else None
+            print(f"[!] SMS: odpowiedź {r.status_code} — {payload}")
+            if isinstance(code, int) and code in SMSAPI_ERRORS:
+                print(f"    Co to znaczy: {SMSAPI_ERRORS[code]}")
+            return False, code if isinstance(code, int) else None
+        except requests.RequestException as exc:
+            print(f"[!] SMS: błąd połączenia z {url} — {exc}")
+    return False, None
+
+
 def notify_sms(event: dict) -> bool:
     """
     SMS przez SMSAPI.pl — POST https://api.smsapi.pl/sms.do, autoryzacja tokenem OAuth.
-    SMS kosztuje, więc treść jest krótka, bez polskich znaków (normalize=1),
-    a wysyłka podlega osobnym regułom (sms_levels + sms_cooldown_minutes).
+    SMS kosztuje, więc treść jest krótka i bez polskich znaków (jeden znak spoza
+    GSM 7-bit skraca wiadomość ze 160 do 70 znaków).
+
+    Jeśli pole nadawcy zostanie odrzucone (błąd 14), monitor ponawia wysyłkę bez
+    tego pola — alarm o awarii sklepu jest ważniejszy niż ładna nazwa nadawcy.
     """
     token = os.environ.get("SMSAPI_TOKEN")
     recipients = os.environ.get("SMSAPI_TO")
@@ -500,21 +540,22 @@ def notify_sms(event: dict) -> bool:
 
     data = {"to": recipients, "message": text, "format": "json", "normalize": "1"}
     if sender:
-        data["from"] = sender          # bez tego SMSAPI użyje pola "Info" (Eco)
-
+        data["from"] = sender
     headers = {"Authorization": f"Bearer {token}"}
-    for url in ("https://api.smsapi.pl/sms.do", "https://api2.smsapi.pl/sms.do"):
-        try:
-            r = requests.post(url, data=data, headers=headers, timeout=20)
-            payload = r.json() if r.headers.get("Content-Type", "").startswith("application/json") \
-                else {"raw": r.text[:300]}
-            if r.status_code == 200 and "error" not in payload:
-                print(f"[+] SMS: wysłano ({payload.get('count', '?')} wiadomości).")
-                return True
-            print(f"[!] SMS: odpowiedź {r.status_code} — {payload}")
-        except requests.RequestException as exc:
-            print(f"[!] SMS: błąd wysyłki przez {url} — {exc}")
-    return False
+
+    ok, error_code = _send_sms_request(data, headers)
+    if ok:
+        return True
+
+    if error_code == 14 and sender:
+        print(f"    Ponawiam bez pola nadawcy „{sender}” — wiadomość dotrze "
+              f"od nadawcy domyślnego (SMS Eco).")
+        data.pop("from", None)
+        ok, _ = _send_sms_request(data, headers)
+        if ok:
+            print("    Alarm dostarczony. Popraw lub usuń sekret SMSAPI_FROM, "
+                  "żeby uniknąć podwójnej wysyłki przy kolejnych alarmach.")
+    return ok
 
 
 def notify(event: dict, site: dict | None = None, cfg: dict | None = None,
