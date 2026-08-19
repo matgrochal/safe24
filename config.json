@@ -1,16 +1,41 @@
 {
+  "_komentarz": "check_every_minutes = jak czesto sprawdzac; alert_after_minutes = jak dlugo musi trwac awaria zanim przyjdzie alarm; notify = kanaly powiadomien dla tego wpisu",
   "timeout_seconds": 20,
   "retries": 2,
   "retry_delay_seconds": 5,
-  "failures_before_alert": 1,
-  "retry_on_status": [429, 500, 502, 503, 504],
-  "immediate_alert_codes": ["5xx"],
+  "retry_on_status": [
+    429,
+    500,
+    502,
+    503,
+    504
+  ],
+  "immediate_alert_codes": [],
+  "check_every_minutes": 15,
+  "alert_after_minutes": 15,
+  "notify": [
+    "teams",
+    "discord",
+    "telegram"
+  ],
+  "sms_levels": [
+    "down"
+  ],
+  "sms_cooldown_minutes": 30,
   "user_agent": "Mozilla/5.0 (compatible; TechnicaMonitorBot/1.0; +https://sklep.technica.pl)",
   "sites": [
     {
       "id": "strona-glowna",
       "name": "Strona glowna sklepu",
       "url": "https://sklep.technica.pl",
+      "check_every_minutes": 1,
+      "alert_after_minutes": 5,
+      "notify": [
+        "teams",
+        "discord",
+        "telegram",
+        "sms"
+      ],
       "expected_status": 200,
       "keyword_required": "newsletter",
       "check_content": true,
@@ -20,12 +45,143 @@
       },
       "ignore_patterns": [
         "\\d+ szt\\. - [\\d\\s,]+ zł"
+      ],
+      "sms_levels": [
+        "down",
+        "up"
+      ]
+    },
+    {
+      "id": "koszyk-pusty",
+      "name": "Koszyk - dostepnosc strony",
+      "url": "https://sklep.technica.pl/cart",
+      "check_every_minutes": 1,
+      "alert_after_minutes": 10,
+      "notify": [
+        "teams",
+        "discord",
+        "telegram",
+        "sms"
+      ],
+      "expected_status": 200,
+      "keyword_required": "Koszyk",
+      "check_content": false,
+      "sms_levels": [
+        "down",
+        "up"
+      ]
+    },
+    {
+      "id": "checkout-dostepnosc",
+      "name": "Checkout - dostepnosc strony",
+      "url": "https://sklep.technica.pl/checkout",
+      "check_every_minutes": 1,
+      "alert_after_minutes": 10,
+      "notify": [
+        "teams",
+        "discord",
+        "telegram",
+        "sms"
+      ],
+      "expected_status": 200,
+      "check_content": false,
+      "sms_levels": [
+        "down",
+        "up"
+      ]
+    },
+    {
+      "id": "sciezka-zakupowa",
+      "name": "Sciezka zakupowa (koszyk + checkout + CTA)",
+      "type": "flow",
+      "enabled": false,
+      "_uwaga": "Wlacz (enabled: true) po uzupelnieniu adresu i pol formularza dodawania do koszyka - instrukcja w README, sekcja 'Scenariusz zakupowy'.",
+      "public_url": "https://sklep.technica.pl/cart",
+      "check_every_minutes": 10,
+      "alert_after_minutes": 10,
+      "notify": [
+        "teams",
+        "discord",
+        "telegram",
+        "sms"
+      ],
+      "check_content": false,
+      "steps": [
+        {
+          "name": "Karta produktu 450021",
+          "method": "GET",
+          "url": "https://sklep.technica.pl/barowa-witryna-chlodnicza-do-butelek-2-drzwiowa-drzwi-przesuwane-210-l-920x515x855-mm-technica-cold-line",
+          "expected_status": [
+            200
+          ],
+          "required_elements": {
+            "przycisk Do koszyka": "Do koszyka"
+          },
+          "extract": {
+            "product_id": "name=\"product_id\"[^>]*value=\"(\\d+)\""
+          }
+        },
+        {
+          "name": "Dodanie produktu do koszyka",
+          "method": "POST",
+          "url": "https://sklep.technica.pl/cart/add",
+          "expected_status": [
+            200,
+            302
+          ],
+          "form": {
+            "product_id": "{product_id}",
+            "quantity": "1"
+          },
+          "headers": {
+            "X-Requested-With": "XMLHttpRequest"
+          }
+        },
+        {
+          "name": "Koszyk z produktem",
+          "method": "GET",
+          "url": "https://sklep.technica.pl/cart",
+          "expected_status": [
+            200
+          ],
+          "required_elements": {
+            "przycisk Przejdz do kasy": "Przejdź do kasy",
+            "przycisk Zapytaj o oferte handlowca": "Zapytaj o ofertę",
+            "podsumowanie Suma brutto": "Suma brutto"
+          },
+          "forbidden_text": "Twój koszyk jest pusty"
+        },
+        {
+          "name": "Checkout z produktem",
+          "method": "GET",
+          "url": "https://sklep.technica.pl/checkout",
+          "expected_status": [
+            200
+          ],
+          "required_elements": {
+            "przycisk Zamow i zaplac": "Zam(ó|o)w i zap[łl]a(ć|c)",
+            "sekcja dostawy": "dostaw",
+            "sekcja platnosci": "p[łl]atno"
+          },
+          "forbidden_text": "Twój koszyk jest pusty"
+        }
+      ],
+      "sms_levels": [
+        "down",
+        "up"
       ]
     },
     {
       "id": "kontakt",
       "name": "Strona Kontakt",
       "url": "https://sklep.technica.pl/kontakt",
+      "check_every_minutes": 15,
+      "alert_after_minutes": 15,
+      "notify": [
+        "teams",
+        "discord",
+        "telegram"
+      ],
       "expected_status": 200,
       "keyword_required": "sklep@technica.pl",
       "check_content": true,
@@ -48,9 +204,19 @@
       "id": "produkt-450021",
       "name": "Produkt 450021 - barowa witryna chlodnicza 210 l",
       "url": "https://sklep.technica.pl/barowa-witryna-chlodnicza-do-butelek-2-drzwiowa-drzwi-przesuwane-210-l-920x515x855-mm-technica-cold-line",
+      "check_every_minutes": 15,
+      "alert_after_minutes": 15,
+      "notify": [
+        "teams",
+        "discord",
+        "telegram"
+      ],
       "expected_status": 200,
       "keyword_required": "Kod produktu",
       "check_content": true,
+      "required_elements": {
+        "przycisk Do koszyka": "Do koszyka"
+      },
       "content_between": {
         "start": "Wyprzedaż",
         "end": "Zapisz się do newslettera"
@@ -71,6 +237,13 @@
       "id": "kategoria-szafy-chlodnicze",
       "name": "Kategoria Szafy chlodnicze",
       "url": "https://sklep.technica.pl/szafy-chlodnicze",
+      "check_every_minutes": 15,
+      "alert_after_minutes": 15,
+      "notify": [
+        "teams",
+        "discord",
+        "telegram"
+      ],
       "expected_status": 200,
       "keyword_required": "Szafy chłodnicze",
       "check_content": true,
