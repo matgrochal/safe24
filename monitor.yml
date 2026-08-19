@@ -1,0 +1,57 @@
+name: Monitor sklep.technica.pl
+
+on:
+  schedule:
+    # co 15 minut (czas UTC). GitHub bywa obciążony i potrafi opóźnić start
+    # zadania cron o kilka–kilkanaście minut — to normalne dla darmowego planu.
+    - cron: "*/15 * * * *"
+  workflow_dispatch:          # pozwala uruchomić ręcznie z zakładki Actions
+
+permissions:
+  contents: write             # potrzebne, aby zapisać state/ z powrotem do repo
+
+concurrency:
+  group: technica-monitor      # nigdy dwa biegi naraz (uniknięcie konfliktów push)
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Ustaw Pythona
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Zainstaluj zależności
+        run: pip install -r requirements.txt
+
+      - name: Sprawdź 4 adresy sklepu
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          TEAMS_PAYLOAD: adaptive
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: python monitor.py
+
+      - name: Zapisz stan (hash + migawki treści)
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state
+          if git diff --staged --quiet; then
+            echo "Brak zmian w stanie — nic do zapisania."
+          else
+            git commit -m "chore(monitor): aktualizacja stanu [skip ci]"
+            git pull --rebase --autostash origin ${{ github.ref_name }} || true
+            git push
+          fi

@@ -1,0 +1,86 @@
+{
+  "timeout_seconds": 20,
+  "retries": 2,
+  "retry_delay_seconds": 5,
+  "failures_before_alert": 1,
+  "retry_on_status": [429, 500, 502, 503, 504],
+  "immediate_alert_codes": ["5xx"],
+  "user_agent": "Mozilla/5.0 (compatible; TechnicaMonitorBot/1.0; +https://sklep.technica.pl)",
+  "sites": [
+    {
+      "id": "strona-glowna",
+      "name": "Strona glowna sklepu",
+      "url": "https://sklep.technica.pl",
+      "expected_status": 200,
+      "keyword_required": "newsletter",
+      "check_content": true,
+      "content_between": {
+        "start": "Wyprzedaż",
+        "end": "Zapisz się do newslettera"
+      },
+      "ignore_patterns": [
+        "\\d+ szt\\. - [\\d\\s,]+ zł"
+      ]
+    },
+    {
+      "id": "kontakt",
+      "name": "Strona Kontakt",
+      "url": "https://sklep.technica.pl/kontakt",
+      "expected_status": 200,
+      "keyword_required": "sklep@technica.pl",
+      "check_content": true,
+      "content_between": {
+        "start": "Wyprzedaż",
+        "end": "Zapisz się do newslettera"
+      },
+      "watch_fields": {
+        "email_sklepu": "(sklep@technica\\.pl)",
+        "email_reklamacje": "(reklamacje@technica\\.pl)",
+        "infolinia": "Infolinia[^\\d]{0,40}(\\d{2} \\d{3} \\d{2} \\d{2})",
+        "godziny_infolinia": "poniedziałek-piątek:\\s*(\\d{1,2}:\\d{2}\\s*-\\s*\\d{1,2}:\\d{2})",
+        "adres": "(ul\\. Miłosna \\d+)"
+      },
+      "ignore_patterns": [
+        "\\d+ szt\\. - [\\d\\s,]+ zł"
+      ]
+    },
+    {
+      "id": "produkt-450021",
+      "name": "Produkt 450021 - barowa witryna chlodnicza 210 l",
+      "url": "https://sklep.technica.pl/barowa-witryna-chlodnicza-do-butelek-2-drzwiowa-drzwi-przesuwane-210-l-920x515x855-mm-technica-cold-line",
+      "expected_status": 200,
+      "keyword_required": "Kod produktu",
+      "check_content": true,
+      "content_between": {
+        "start": "Wyprzedaż",
+        "end": "Zapisz się do newslettera"
+      },
+      "watch_fields": {
+        "kod_produktu": "Kod produktu:\\s*(\\d+)",
+        "cena_brutto": "(\\d[\\d \\u00a0]{0,12}[,.]\\d{2})\\s*(?:zł|PLN)",
+        "dostepnosc": "(Wysyłka w ciągu[^\\n]{0,40})",
+        "przycisk_koszyka": "(Do koszyka)"
+      },
+      "ignore_patterns": [
+        "\\d+ szt\\. - [\\d\\s,]+ zł",
+        "Ostatnio oglądane",
+        "Polecane produkty"
+      ]
+    },
+    {
+      "id": "kategoria-szafy-chlodnicze",
+      "name": "Kategoria Szafy chlodnicze",
+      "url": "https://sklep.technica.pl/szafy-chlodnicze",
+      "expected_status": 200,
+      "keyword_required": "Szafy chłodnicze",
+      "check_content": true,
+      "content_between": {
+        "start": "Wyprzedaż",
+        "end": "Zapisz się do newslettera"
+      },
+      "ignore_patterns": [
+        "\\d+ szt\\. - [\\d\\s,]+ zł"
+      ]
+    }
+  ]
+}
