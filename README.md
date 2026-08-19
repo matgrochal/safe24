@@ -198,6 +198,27 @@ Przykładowa treść: `AWARIA Strona glowna sklepu: HTTP 502 Bad Gateway (trwa 5
 | `SMSAPI_TO` | numer odbiorcy, np. `48500100200`; kilka numerów po przecinku |
 | `SMSAPI_FROM` | zatwierdzone pole nadawcy, np. `TECHNICA` (opcjonalne) |
 
+#### Błąd 14 „Invalid from field"
+
+Najczęstszy problem przy pierwszym uruchomieniu. Oznacza, że wartość `SMSAPI_FROM`
+nie jest zatwierdzonym polem nadawcy na Twoim koncie. Samo wpisanie dowolnej nazwy
+nie wystarczy — każde pole nadawcy SMSAPI weryfikuje ręcznie (pn–pt 8–17).
+
+Dwie drogi wyjścia:
+
+- **Szybka:** usuń sekret `SMSAPI_FROM`. Wiadomości pójdą wtedy od nadawcy domyślnego
+  (SMS Eco) i dotrą od razu.
+- **Docelowa:** w panelu SMSAPI wejdź w **Ustawienia → Pola nadawcy**, dodaj nazwę
+  i poczekaj na akceptację. Limit to 11 znaków: `a-z A-Z 0-9`, kropka, myślnik, spacja —
+  bez polskich znaków i bez numeru telefonu.
+
+Monitor sam sobie z tym radzi: gdy SMSAPI odrzuci pole nadawcy, wysyłka jest ponawiana
+bez tego pola, żeby alarm o awarii sklepu mimo wszystko dotarł. W logu zobaczysz wtedy
+wyjaśnienie i przypomnienie o poprawieniu sekretu.
+
+Inne kody błędów opisane w logu: 101 (zły token), 103 (brak punktów na koncie),
+105 (blokada IP w ustawieniach tokena), 13 (zły numer odbiorcy).
+
 4. Test (uwaga — wyśle prawdziwy, płatny SMS):
 
 ```bash
