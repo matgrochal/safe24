@@ -1,0 +1,55 @@
+{
+  "kategoria-szafy-chlodnicze": {
+    "consecutive_failures": 0,
+    "content_changed_at": "2026-08-19T20:51:34+00:00",
+    "content_hash": "c5936fd79ac6420955ca64c4faef046fcecbbf3a3a3fd85f8f009c6619df3537",
+    "last_check": "2026-08-19T20:51:34+00:00",
+    "last_response_time": 0.46,
+    "last_status_code": 200,
+    "status": "up",
+    "url": "https://sklep.technica.pl/szafy-chlodnicze"
+  },
+  "kontakt": {
+    "consecutive_failures": 0,
+    "content_changed_at": "2026-08-19T20:51:32+00:00",
+    "content_hash": "48766a5d8c7998c7d540dfafd983bd42919df2bd075e25230460a21e4db7159d",
+    "fields": {
+      "adres": "ul. Miłosna 2",
+      "email_reklamacje": "reklamacje@technica.pl",
+      "email_sklepu": "sklep@technica.pl",
+      "godziny_infolinia": "8:00-17:00",
+      "infolinia": "BRAK"
+    },
+    "last_check": "2026-08-19T20:51:32+00:00",
+    "last_response_time": 0.6,
+    "last_status_code": 200,
+    "status": "up",
+    "url": "https://sklep.technica.pl/kontakt"
+  },
+  "produkt-450021": {
+    "consecutive_failures": 0,
+    "content_changed_at": "2026-08-19T20:51:33+00:00",
+    "content_hash": "dea3541a7b223d3ed9126f6dd61042c874b150e6958c9ca655c332bd3389fcd1",
+    "fields": {
+      "cena_brutto": "2 016,00",
+      "dostepnosc": "Wysyłka w ciągu",
+      "kod_produktu": "450021",
+      "przycisk_koszyka": "Do koszyka"
+    },
+    "last_check": "2026-08-19T20:51:33+00:00",
+    "last_response_time": 0.35,
+    "last_status_code": 200,
+    "status": "up",
+    "url": "https://sklep.technica.pl/barowa-witryna-chlodnicza-do-butelek-2-drzwiowa-drzwi-przesuwane-210-l-920x515x855-mm-technica-cold-line"
+  },
+  "strona-glowna": {
+    "consecutive_failures": 0,
+    "content_changed_at": "2026-08-19T20:51:31+00:00",
+    "content_hash": "f44dbae4279cbf888b99d1dcf27ed7ec9b6293e3aa5e1ab0e4d8847e5eefae8e",
+    "last_check": "2026-08-19T20:51:31+00:00",
+    "last_response_time": 1.38,
+    "last_status_code": 200,
+    "status": "up",
+    "url": "https://sklep.technica.pl"
+  }
+}
