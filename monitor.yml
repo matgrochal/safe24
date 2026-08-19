@@ -47,6 +47,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p state/snapshots
           git add state
           if git diff --staged --quiet; then
             echo "Brak zmian w stanie — nic do zapisania."
