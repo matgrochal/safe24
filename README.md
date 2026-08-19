@@ -1,214 +1,261 @@
-# Monitoring sklep.technica.pl — dostępność, kody HTTP i zmiany treści
+# Monitoring sklep.technica.pl — dostępność, kody HTTP, CTA i zmiany treści
 
-Darmowy monitoring oparty o Pythona i GitHub Actions. Co 15 minut sprawdza cztery
-adresy sklepu: czy odpowiadają kodem HTTP 200, czy nie zwracają błędu 4xx/5xx
-i czy nie zmieniła się ich zawartość (cena, dostępność, dane kontaktowe, lista produktów).
-O każdym zdarzeniu informuje na **Discordzie**, **Telegramie** i **Microsoft Teams**.
+Monitoring oparty o Pythona i GitHub Actions. Sprawdza dostępność stron, obecność
+kluczowych przycisków, poprawność ścieżki zakupowej oraz zmiany treści.
+Powiadamia na **Discordzie**, **Telegramie**, **Microsoft Teams** i **SMS-em (SMSAPI.pl)**.
 
-## Monitorowane strony
+## Monitorowane wpisy
 
-| id w config.json | Adres | Co jest sprawdzane |
-|---|---|---|
-| `strona-glowna` | https://sklep.technica.pl | HTTP 200, obecność stopki z newsletterem, zmiany treści strony głównej (bannery, promocje) |
-| `kontakt` | https://sklep.technica.pl/kontakt | HTTP 200, obecność `sklep@technica.pl`, zmiany treści oraz pilnowane wartości: e-mail sklepu, e-mail reklamacji, numer infolinii, godziny pracy, adres |
-| `produkt-450021` | https://sklep.technica.pl/barowa-witryna-chlodnicza-do-butelek-2-drzwiowa-drzwi-przesuwane-210-l-920x515x855-mm-technica-cold-line | HTTP 200, obecność frazy „Kod produktu”, zmiany treści oraz pilnowane wartości: kod produktu (450021), cena brutto, termin wysyłki, obecność przycisku „Do koszyka” |
-| `kategoria-szafy-chlodnicze` | https://sklep.technica.pl/szafy-chlodnicze | HTTP 200, obecność nagłówka „Szafy chłodnicze”, zmiany listingu — nowe/usunięte produkty, zmiany cen na liście |
+| id | Adres / zakres | Sprawdzane co | Alarm po | Kanały |
+|---|---|---|---|---|
+| `strona-glowna` | https://sklep.technica.pl | 1 min | **5 min** | Teams, Discord, Telegram, **SMS** |
+| `koszyk-pusty` | https://sklep.technica.pl/cart | 1 min | **10 min** | Teams, Discord, Telegram, **SMS** |
+| `checkout-dostepnosc` | https://sklep.technica.pl/checkout | 1 min | **10 min** | Teams, Discord, Telegram, **SMS** |
+| `sciezka-zakupowa` | produkt → koszyk → checkout, razem z CTA | 10 min | 10 min | Teams, Discord, Telegram, **SMS** |
+| `kontakt` | https://sklep.technica.pl/kontakt | 15 min | 15 min | Teams, Discord, Telegram |
+| `produkt-450021` | karta produktu (barowa witryna chłodnicza) | 15 min | 15 min | Teams, Discord, Telegram |
+| `kategoria-szafy-chlodnicze` | https://sklep.technica.pl/szafy-chlodnicze | 15 min | 15 min | Teams, Discord, Telegram |
 
-Cztery adresy × 96 uruchomień dziennie ≈ 384 zapytania na dobę do sklepu — ruch pomijalny,
-ale wart uwagi przy konfiguracji rate limitera (patrz kod 429 niżej).
+Wpis `sciezka-zakupowa` jest domyślnie **wyłączony** (`"enabled": false`) — wymaga
+jednorazowego uzupełnienia adresu dodawania do koszyka, patrz sekcja „Scenariusz zakupowy”.
+
+---
+
+## Jak działa harmonogram i próg alarmu
+
+To dwa niezależne ustawienia, obydwa **osobne dla każdego wpisu**:
+
+```json
+"check_every_minutes": 1,     ← jak często sprawdzać
+"alert_after_minutes": 5      ← jak długo musi trwać awaria, zanim przyjdzie alarm
+```
+
+Monitor zapamiętuje moment pierwszego niepowodzenia (`down_since`) i alarmuje dopiero
+wtedy, gdy awaria trwa nieprzerwanie dłużej niż `alert_after_minutes`. Chwilowy błąd,
+który sam mija w minutę, nie budzi nikogo w nocy. Alarm o awarii przychodzi **raz**;
+drugie powiadomienie to dopiero informacja o powrocie do działania, z podanym łącznym
+czasem przestoju.
+
+### Jak uzyskaliśmy rozdzielczość 1 minuty
+
+GitHub Actions **nie pozwala planować zadań częściej niż co 5 minut**, a w praktyce
+uruchamia je z opóźnieniem sięgającym kilkunastu minut. Sam cron nie wystarczy więc do
+progu 5-minutowego.
+
+Dlatego workflow startuje co 10 minut, ale skrypt **pracuje w pętli przez ~9 minut**,
+wykonując przebieg co 60 sekund (`--loop-minutes 9 --pass-seconds 60`). W każdym przebiegu
+sprawdzane są tylko te wpisy, którym minął ich własny `check_every_minutes`.
+
+Uczciwie o ograniczeniach: między końcem jednego uruchomienia a startem następnego zostaje
+przerwa (zwykle ~1 min, przy obciążeniu GitHuba dłuższa), a pojedyncze uruchomienie może
+zostać pominięte. Realny czas wykrycia awarii to **około 5–8 minut** zamiast dokładnie 5.
+Jeśli potrzebujesz twardej gwarancji, właściwym narzędziem jest zewnętrzny monitoring
+uptime lub własny serwer z cronem — GitHub Actions to rozwiązanie „wystarczająco dobre
+i darmowe", nie system o gwarantowanym czasie reakcji.
+
+⚠️ **Ten harmonogram wymaga repozytorium publicznego.** Pętla zużywa ~9 minut co 10 minut,
+czyli ~1300 minut dziennie. Darmowy limit dla repozytoriów prywatnych to 2000 minut
+**miesięcznie** — wyczerpałby się w półtora dnia. W repozytoriach publicznych uruchomienia
+są bezpłatne i bez limitu.
+
+---
 
 ## Monitorowane kody odpowiedzi HTTP
 
-Każdy kod inny niż oczekiwany (`expected_status`, domyślnie 200) wyzwala alarm.
-Powiadomienie zawiera nie tylko numer kodu, lecz także jego znaczenie i podpowiedź, co sprawdzić.
+Każdy kod inny niż oczekiwany wyzwala procedurę awarii. Powiadomienie zawiera znaczenie
+kodu i podpowiedź, co sprawdzić.
 
-### Błędy po stronie klienta / żądania (4xx)
+### Błędy po stronie klienta (4xx)
 
-| Kod | Znaczenie | Zachowanie monitora |
+| Kod | Znaczenie | Zachowanie |
 |---|---|---|
-| **403 Forbidden** | Dostęp zabroniony — serwer rozumie żądanie, ale odmawia autoryzacji. Problem z uprawnieniami albo blokada przez zaporę WAF | Alarm. W podpowiedzi: sprawdź reguły WAF/Cloudflare, blokady IP i uprawnienia katalogów. **Najczęstsza przyczyna fałszywego alarmu: WAF uznaje bota monitorującego za niepożądany ruch** |
-| **404 Not Found** | Nie znaleziono strony — podany adres nie istnieje na serwerze | Alarm. Dla karty produktu i kategorii oznacza zwykle usunięcie lub zmianę adresu URL |
-| **429 Too Many Requests** | Zbyt wiele żądań — blokada z powodu przekroczenia limitu zapytań (rate limiting) | Ponowienie z respektowaniem nagłówka `Retry-After` (maks. 60 s), a jeśli dalej trwa — alarm |
+| **403 Forbidden** | Dostęp zabroniony — problem z uprawnieniami albo blokada przez WAF | Alarm po progu czasowym. Podpowiedź: reguły WAF/Cloudflare, blokady IP, uprawnienia katalogów |
+| **404 Not Found** | Adres nie istnieje na serwerze | Alarm. Dla produktu/kategorii zwykle usunięcie lub zmiana URL |
+| **429 Too Many Requests** | Przekroczony limit zapytań (rate limiting) | Ponowienie z respektowaniem nagłówka `Retry-After` (maks. 60 s), potem alarm |
 
-Monitor rozpoznaje też 400, 401, 405 i 410, a każdy inny kod 4xx opisuje ogólnie jako błąd żądania.
+Rozpoznawane są też 400, 401, 405 i 410; pozostałe kody 4xx opisywane są ogólnie.
 
-### Błędy po stronie serwera (5xx — zawsze wyzwalają alarm)
+### Błędy po stronie serwera (5xx)
 
-| Kod | Znaczenie | Zachowanie monitora |
+| Kod | Znaczenie | Podpowiedź w alarmie |
 |---|---|---|
-| **500 Internal Server Error** | Wewnętrzny błąd serwera lub aplikacji, np. błąd w skryptach PHP | 2 ponowienia, potem natychmiastowy alarm. Podpowiedź: sprawdź logi PHP |
-| **502 Bad Gateway** | Błędna brama — serwer pośredniczący (Nginx/Cloudflare) otrzymał nieprawidłową odpowiedź od serwera głównego | j.w. Podpowiedź: sprawdź PHP-FPM / backend, czy proces nie został ubity (OOM) |
-| **503 Service Unavailable** | Usługa niedostępna — serwer przeciążony albo trwa aktualizacja/konserwacja | j.w. Podpowiedź: sprawdź obciążenie i tryb maintenance |
-| **504 Gateway Timeout** | Przekroczono czas oczekiwania bramy — serwer nie odpowiedział w limicie czasu, często problem z bazą danych | j.w. Podpowiedź: sprawdź czas zapytań SQL |
+| **500 Internal Server Error** | Błąd aplikacji, najczęściej PHP lub baza | Sprawdź logi błędów PHP |
+| **502 Bad Gateway** | Nginx/Cloudflare dostał złą odpowiedź od backendu | Sprawdź PHP-FPM, czy proces nie został ubity (OOM) |
+| **503 Service Unavailable** | Przeciążenie lub tryb konserwacji | Sprawdź obciążenie i tryb maintenance |
+| **504 Gateway Timeout** | Serwer nie odpowiedział w limicie czasu | Sprawdź czas zapytań SQL |
 
-Kody 5xx są w `config.json` wpisane na listę `immediate_alert_codes: ["5xx"]` — alarmują
-**natychmiast**, nawet gdy podniesiesz `failures_before_alert`. Błędy 4xx podlegają zwykłemu
-progowi powtórzeń, bo częściej wynikają z celowej zmiany po stronie sklepu.
+Wszystkie kody podlegają teraz progowi `alert_after_minutes`. Jeśli chcesz, by konkretne
+kody alarmowały **natychmiast**, z pominięciem progu, dopisz je w `config.json`:
 
-Poza kodami HTTP alarm wyzwala także brak odpowiedzi serwera (błąd DNS, timeout,
-zerwane połączenie, wygasły certyfikat SSL) oraz brak frazy kontrolnej mimo kodu 200 —
-to typowy objaw pustej strony lub przerwanego renderowania szablonu.
+```json
+"immediate_alert_codes": ["5xx"]
+```
+
+Alarm wyzwala też brak odpowiedzi serwera (DNS, timeout, wygasły certyfikat SSL) oraz
+brak frazy kontrolnej lub wymaganego elementu mimo kodu 200.
+
+---
+
+## Scenariusz zakupowy — dlaczego zwykły GET nie wystarczy
+
+Zweryfikowałem to na żywym sklepie: **`/cart` i `/checkout` otwarte bez sesji zwracają
+HTTP 200, ale ich treść jest pusta.** Nie ma tam przycisku „Przejdź do kasy", „Zapytaj
+o ofertę naszego handlowca" ani „Zamów i zapłać" — bo bot monitorujący nie ma koszyka.
+Wpisanie tych fraz do zwykłego sprawdzenia strony dałoby alarm co minutę, przez całą dobę.
+
+Dlatego przyciski CTA sprawdza osobny wpis typu `flow`: monitor otwiera kartę produktu,
+**faktycznie dodaje produkt do koszyka**, a dopiero potem wchodzi na `/cart` i `/checkout`
+w tej samej sesji (ciasteczka są zachowywane). Wtedy przyciski są widoczne i można
+sprawdzić, czy istnieją.
+
+Dwa niezależne poziomy kontroli:
+
+- **`koszyk-pusty` i `checkout-dostepnosc`** — sprawdzają tylko, czy strony w ogóle
+  odpowiadają (HTTP 200). Działają od razu, bez konfiguracji.
+- **`sciezka-zakupowa`** — sprawdza, czy klient realnie może kupić. Wymaga uzupełnienia
+  jednego adresu.
+
+### Uzupełnienie adresu dodawania do koszyka (jednorazowo, ~5 minut)
+
+Adresu i nazw pól formularza nie da się odgadnąć — są specyficzne dla wdrożenia AtomStore.
+Odczytasz je z przeglądarki:
+
+1. Otwórz kartę produktu w Chrome.
+2. Naciśnij **F12** → zakładka **Network** (Sieć) → zaznacz filtr **Fetch/XHR**.
+3. Kliknij na stronie **„Do koszyka"**.
+4. Na liście pojawi się nowe żądanie — kliknij je.
+5. Z zakładki **Headers** skopiuj **Request URL** (np. `https://sklep.technica.pl/cart/add`).
+6. Z zakładki **Payload** (lub **Request** → **Form Data**) spisz nazwy i wartości pól,
+   np. `product_id: 450021`, `quantity: 1`, czasem też token CSRF.
+
+Następnie w `config.json`, we wpisie `sciezka-zakupowa`:
+
+```json
+{
+  "name": "Dodanie produktu do koszyka",
+  "method": "POST",
+  "url": "TU_WKLEJ_REQUEST_URL",
+  "form": { "product_id": "{product_id}", "quantity": "1" }
+}
+```
+
+Jeśli w Form Data jest token CSRF, dodaj go do kroku pierwszego w sekcji `extract`
+(wzorzec regex wyciągający wartość ze strony), a potem użyj jako `"{nazwa}"` w `form`.
+
+Na koniec zmień `"enabled": false` na `"enabled": true` i przetestuj:
+
+```bash
+python monitor.py --only sciezka-zakupowa --dry-run
+```
+
+Zobaczysz każdy krok z osobna i dowiesz się, który nie przechodzi.
+
+### Co konkretnie sprawdza scenariusz
+
+| Krok | Warunek zaliczenia |
+|---|---|
+| Karta produktu | HTTP 200 + obecny przycisk „Do koszyka" |
+| Dodanie do koszyka | HTTP 200 lub 302 |
+| `/cart` | obecne: „Przejdź do kasy", „Zapytaj o ofertę", „Suma brutto"; **brak** tekstu „Twój koszyk jest pusty" |
+| `/checkout` | obecne: „Zamów i zapłać", sekcja dostawy, sekcja płatności; **brak** „Twój koszyk jest pusty" |
+
+Niepowodzenie dowolnego kroku daje alarm z nazwą kroku i brakującego elementu — na przykład
+„Krok „Checkout z produktem": strona odpowiada poprawnie (HTTP 200), ale brakuje elementów:
+przycisk Zamów i zapłać". To najcenniejszy sygnał w całym monitoringu: sklep formalnie
+działa, a mimo to nikt nie może złożyć zamówienia.
+
+⚠️ Scenariusz **nie składa zamówienia** — kończy się na wyświetleniu checkoutu. Nie generuje
+żadnych zamówień testowych ani płatności.
+
+---
+
+## Powiadomienia SMS (SMSAPI.pl)
+
+SMS-y kosztują, więc są traktowane inaczej niż pozostałe kanały:
+
+- wysyłane tylko dla wpisów, które mają `"sms"` w polu `notify` (obecnie: strona główna,
+  koszyk, checkout, ścieżka zakupowa),
+- tylko dla poziomów z `sms_levels` — domyślnie awaria (`down`) i powrót (`up`);
+  zmiany treści i cen **nie idą SMS-em**,
+- z blokadą częstotliwości `sms_cooldown_minutes` (domyślnie 30 min na wpis),
+- treść jest skracana i pozbawiana polskich znaków. To nie kosmetyka: jeden znak spoza
+  GSM 7-bit skraca pojedynczą wiadomość ze 160 do 70 znaków, czyli podnosi koszt wysyłki.
+
+Przykładowa treść: `AWARIA Strona glowna sklepu: HTTP 502 Bad Gateway (trwa 5 min)`
+
+### Konfiguracja
+
+1. Zaloguj się na https://ssl.smsapi.pl i wygeneruj **token OAuth**
+   (Ustawienia → API / „Zarządzanie tokenami"). Zalecane jest ograniczenie uprawnień
+   tokena wyłącznie do wysyłki oraz filtrowanie adresów IP.
+2. Sprawdź swoje **pole nadawcy** (nazwa nadawcy) w panelu — musi być zatwierdzone.
+   Bez tego parametru SMSAPI wyśle wiadomość jako tańszą „Eco" z generycznym nadawcą.
+3. Dodaj sekrety w GitHubie (**Settings → Secrets and variables → Actions**):
+
+| Sekret | Wartość |
+|---|---|
+| `SMSAPI_TOKEN` | token OAuth z panelu SMSAPI |
+| `SMSAPI_TO` | numer odbiorcy, np. `48500100200`; kilka numerów po przecinku |
+| `SMSAPI_FROM` | zatwierdzone pole nadawcy, np. `TECHNICA` (opcjonalne) |
+
+4. Test (uwaga — wyśle prawdziwy, płatny SMS):
+
+```bash
+python monitor.py --test-alerts --with-sms
+```
+
+Bez flagi `--with-sms` test obejmuje tylko Teams, Discord i Telegram.
+
+Monitor korzysta z `https://api.smsapi.pl/sms.do`, a przy niepowodzeniu automatycznie
+ponawia próbę przez adres zapasowy `https://api2.smsapi.pl/sms.do`.
+
+---
 
 ## Struktura plików
 
 ```
 website-monitor/
-├── .github/
-│   └── workflows/
-│       └── monitor.yml        # harmonogram co 15 min + zapis stanu do repo
+├── .github/workflows/monitor.yml   # cron co 10 min + pętla 9 min w środku
 ├── state/
-│   ├── state.json             # hash treści, status, pilnowane wartości (tworzone automatycznie)
-│   └── snapshots/             # migawki treści czterech stron — z nich powstaje diff
-├── config.json                # cztery monitorowane adresy sklepu
-├── monitor.py                 # cały skrypt monitorujący
+│   ├── state.json                  # status, down_since, hashe, pilnowane wartości
+│   └── snapshots/                  # migawki treści (źródło diffów)
+├── config.json                     # wpisy, harmonogramy, progi, kanały
+├── monitor.py
 ├── requirements.txt
-└── README.md
+├── README.md
+└── INSTRUKCJA.md                   # wdrożenie krok po kroku dla laika
 ```
 
-Katalog `state/` jest commitowany z powrotem do repozytorium przez workflow — to jest
-„pamięć” monitora między uruchomieniami. Żadna baza danych nie jest potrzebna.
+## Poziomy powiadomień
 
----
+| Ikona | Zdarzenie | SMS? |
+|---|---|---|
+| 🔴 | awaria — zły kod HTTP, brak odpowiedzi, brak frazy/elementu, przerwana ścieżka zakupowa | tak (dla wpisów z `sms`) |
+| 🟢 | powrót do działania, z łącznym czasem przestoju | tak |
+| 🟡 | zmiana treści strony — z fragmentem diffa | nie |
+| 🟠 | zmiana pilnowanej wartości (cena, dostępność, kontakt) | nie |
 
-## Krok 1. Utwórz repozytorium
-
-1. GitHub → **New repository** → nazwa np. `technica-monitor`.
-2. Wgraj pliki z tego pakietu — przez WWW (*Add file → Upload files*) albo z konsoli:
+## Przydatne polecenia
 
 ```bash
-git init
-git add .
-git commit -m "feat: monitoring sklep.technica.pl"
-git branch -M main
-git remote add origin https://github.com/UZYTKOWNIK/technica-monitor.git
-git push -u origin main
+python monitor.py                              # jeden przebieg
+python monitor.py --loop-minutes 9             # tryb pętli (jak w GitHub Actions)
+python monitor.py --only checkout-dostepnosc --dry-run
+python monitor.py --only sciezka-zakupowa --dry-run
+python monitor.py --test-alerts                # test kanałów bez SMS
+python monitor.py --test-alerts --with-sms     # test wraz z SMS (płatny)
 ```
-
-> Przy wgrywaniu przez przeglądarkę GitHub pomija puste katalogi — pliki
-> `state/.gitkeep` i `state/snapshots/.gitkeep` są w pakiecie właśnie po to,
-> żeby katalogi się utworzyły.
-
-## Krok 2. Skonfiguruj powiadomienia
-
-Wystarczy jeden kanał, ale możesz włączyć wszystkie trzy naraz. Każdy jest opcjonalny —
-skrypt pomija kanał, dla którego nie ustawiono sekretu.
-
-### Discord
-1. Serwer → *Ustawienia kanału* → **Integracje → Webhooki → Nowy webhook**.
-2. Skopiuj URL → sekret `DISCORD_WEBHOOK_URL`.
-
-### Telegram
-1. Napisz do **@BotFather** → `/newbot` → otrzymasz token → sekret `TELEGRAM_BOT_TOKEN`.
-2. Napisz cokolwiek do swojego bota (bot nie może zacząć rozmowy pierwszy).
-3. Otwórz `https://api.telegram.org/bot<TOKEN>/getUpdates` i odczytaj `chat.id`
-   → sekret `TELEGRAM_CHAT_ID`. Dla grupy: dodaj bota do grupy i użyj jej ujemnego ID.
-
-### Microsoft Teams
-Klasyczne webhooki *Office 365 Connectors* (adresy `webhook.office.com`) Microsoft
-wyłączył ostatecznie w maju 2026 — działa wyłącznie aplikacja **Workflows** (Power Automate):
-
-1. W Teams otwórz kanał → **⋯ → Workflows** (albo aplikacja *Workflows* z lewego paska).
-2. Wybierz szablon **„Post to a channel when a webhook request is received”**.
-3. Zaloguj się, wskaż zespół i kanał → **Utwórz / Add workflow**.
-4. Skopiuj wygenerowany adres URL (domena `logic.azure.com` / `powerautomate.com`)
-   → sekret `TEAMS_WEBHOOK_URL`.
-
-Skrypt wysyła Adaptive Card (kolor karty zależy od typu zdarzenia). Jeśli Twój flow
-oczekuje starszego formatu, ustaw w `monitor.yml` `TEAMS_PAYLOAD: messagecard` —
-Workflows obsługuje oba, ale MessageCard nie renderuje przycisków.
-
-### Dodanie sekretów w GitHub
-Repozytorium → **Settings → Secrets and variables → Actions → New repository secret**:
-
-| Nazwa sekretu | Kanał |
-|---|---|
-| `DISCORD_WEBHOOK_URL` | Discord |
-| `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` | Telegram |
-| `TEAMS_WEBHOOK_URL` | Teams |
-
-## Krok 3. Nadaj workflow prawo zapisu
-
-**Settings → Actions → General → Workflow permissions** → **Read and write permissions** → *Save*.
-Bez tego krok zapisujący `state/` zwróci błąd 403 i monitor nie zapamięta hashy —
-przy każdym uruchomieniu zgłaszałby zmianę treści od nowa.
-
-## Krok 4. Uruchom i przetestuj
-
-1. Zakładka **Actions** → *Website monitor* → **Run workflow**. Pierwsze uruchomienie
-   tylko zapisuje punkt odniesienia dla czterech stron — brak powiadomień jest wtedy poprawny.
-2. Test samych powiadomień (lokalnie):
-
-```bash
-pip install -r requirements.txt
-export TEAMS_WEBHOOK_URL="https://..."      # PowerShell: $env:TEAMS_WEBHOOK_URL="..."
-python monitor.py --test-alerts
-```
-
-3. Test pojedynczej strony bez skutków ubocznych:
-
-```bash
-python monitor.py --only produkt-450021 --dry-run
-python monitor.py --only kontakt --dry-run
-```
-
-W trybie `--dry-run` skrypt wypisze wykryte wartości, np.
-`{'kod_produktu': '450021', 'cena_brutto': '1 915,00', 'dostepnosc': 'Wysyłka w ciągu 2 dni roboczych!', 'przycisk_koszyka': 'Do koszyka'}`.
-To najszybszy sposób, by sprawdzić, czy wzorce w `watch_fields` nadal pasują do szablonu sklepu.
-
----
-
-## Jak działa porównywanie treści w tym sklepie
-
-Sklep działa na AtomStore, gdzie **każda podstrona zawiera to samo rozbudowane menu
-kategorii (kilka tysięcy linków) i tę samą stopkę**. Hashowanie całego HTML byłoby
-bezużyteczne — alarm przychodziłby przy każdej zmianie dowolnej kategorii w sklepie.
-Dlatego w `config.json` każda strona ma:
-
-```json
-"content_between": { "start": "Wyprzedaż", "end": "Zapisz się do newslettera" }
-```
-
-Porównywana jest wyłącznie treść **między ostatnią pozycją menu a stopką**, czyli
-faktyczna zawartość strony. Dodatkowo skrypt usuwa `<script>`, `<style>`, komentarze,
-tokeny CSRF, `nonce`, cache-bustery i znaczniki czasu, a wzorzec
-`\d+ szt\. - [\d\s,]+ zł` wycina stan koszyka z nagłówka.
-
-Drugi mechanizm to `watch_fields` — nazwane wyrażenia regularne wyciągające konkretne
-wartości. Zmiana ceny przychodzi wtedy jako czytelny komunikat
-`cena_brutto: „1 915,00” → „1 799,00”`, a zniknięcie przycisku „Do koszyka” jako
-`przycisk_koszyka: „Do koszyka” → „BRAK”` z adnotacją o możliwym wycofaniu produktu.
-
-### Poziomy powiadomień
-
-| Ikona | Zdarzenie |
-|---|---|
-| 🔴 | awaria — błędny kod HTTP, brak odpowiedzi, brak frazy kontrolnej |
-| 🟢 | powrót do działania (wysyłane raz, po ustaniu awarii) |
-| 🟡 | zmiana treści strony — z fragmentem diffa |
-| 🟠 | zmiana pilnowanej wartości — cena, dostępność, dane kontaktowe |
-
-Alarmy wysyłane są **przy zmianie stanu**, nie w kółko: trwająca awaria nie generuje
-powiadomienia co 15 minut.
 
 ## Co warto wiedzieć
 
-- **Cron w GitHub Actions bywa opóźniony.** Na darmowym planie zadanie `*/15` potrafi
-  wystartować kilka–kilkanaście minut później przy dużym obciążeniu platformy, a przy
-  bardzo dużym pojedynczy bieg może zostać pominięty. Do wykrycia awarii w kilkanaście
-  minut to wystarcza; do SLA liczonego w sekundach — nie.
-- **Zużycie limitu.** Repo prywatne: ~96 biegów dziennie × ~1 min ≈ 2900 min/mies.,
-  a darmowy limit to 2000 min/mies. Ustaw repo jako **publiczne** (biegi darmowe bez limitu)
-  albo zmień cron na `*/30`. Uwaga: w repo publicznym widoczne są migawki treści w `state/snapshots/`.
-- **Uśpienie harmonogramu.** GitHub wyłącza cron w repo bez aktywności przez 60 dni —
-  tutaj problem nie występuje, bo workflow sam commituje zmiany w `state/`.
-- **Kod 403 z WAF.** Jeśli monitor zacznie dostawać 403 mimo działającego sklepu,
-  zapora uznała bota za niepożądany ruch. Rozwiązania: dodać `User-Agent` monitora
-  (pole `user_agent` w `config.json`) do wyjątków albo odblokować zakresy IP GitHub Actions.
-- **Kod 429.** Przy czterech stronach co 15 minut limit zapytań nie powinien reagować;
-  jeśli jednak zacznie — zmniejsz częstotliwość crona lub dodaj wyjątek w rate limiterze.
-- **Zmiana szablonu sklepu** unieważni wzorce `watch_fields` — wartości zmienią się na `BRAK`
-  i dostaniesz o tym powiadomienie. Wtedy wystarczy poprawić wyrażenia w `config.json`
-  i sprawdzić je poleceniem `--only <id> --dry-run`.
-- **Listing kategorii** potrafi zmieniać kolejność produktów (sortowanie, rotacja promocji).
-  Jeśli alarmy z `kategoria-szafy-chlodnicze` okażą się zbyt częste, ustaw dla tej strony
-  `"check_content": false` i dodaj `watch_fields` z licznikiem produktów.
+- **Cron GitHuba bywa opóźniony** i pojedyncze uruchomienie może zostać pominięte —
+  patrz sekcja o harmonogramie.
+- **Repozytorium musi być publiczne** przy tym harmonogramie. Migawki treści w `state/`
+  będą wtedy publicznie widoczne; tokeny i webhooki pozostają w sekretach.
+- **403 z zapory**: monitor przedstawia się jako `TechnicaMonitorBot` — poproś
+  administratora o wyjątek, jeśli WAF zacznie go blokować.
+- **Zmiana szablonu sklepu** unieważni wzorce w `watch_fields` i `required_elements`.
+  Wartości zmienią się na `BRAK` i dostaniesz o tym powiadomienie; wtedy popraw wzorce
+  i sprawdź je przez `--only <id> --dry-run`.
+- **Za dużo alarmów o zmianie treści?** Ustaw dla danego wpisu `"check_content": false`
+  albo dopisz regułę do `ignore_patterns`.
