@@ -2,11 +2,10 @@ name: Monitor sklep.technica.pl
 
 on:
   schedule:
-    # Uruchomienie co 10 minut, a wewnątrz jednego uruchomienia skrypt pracuje
-    # w pętli przez ~9 minut, sprawdzając strony co 60 sekund. Dzięki temu
-    # realna rozdzielczość monitoringu to 1 minuta, a nie 10 — GitHub nie
-    # pozwala planować zadań częściej niż co 5 minut i bywa mocno opóźniony.
-    - cron: "*/10 * * * *"
+    # Nierówne minuty zamiast */10 — GitHub uruchamia najwięcej zadań o pełnych
+    # dziesiątkach (:00, :10, :20), więc kolejka jest wtedy najdłuższa.
+    # Przesunięcie o 3 minuty realnie skraca oczekiwanie.
+    - cron: "3,13,23,33,43,53 * * * *"
   workflow_dispatch:          # ręczne uruchomienie z zakładki Actions
 
 permissions:
@@ -19,7 +18,7 @@ concurrency:
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 14
+    timeout-minutes: 30
 
     steps:
       - name: Pobierz repozytorium
@@ -34,7 +33,7 @@ jobs:
       - name: Zainstaluj zależności
         run: pip install -r requirements.txt
 
-      - name: Monitoruj sklep przez ~9 minut
+      - name: Monitoruj sklep przez ~25 minut
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -45,7 +44,10 @@ jobs:
           SMSAPI_TO: ${{ secrets.SMSAPI_TO }}
           SMSAPI_FROM: ${{ secrets.SMSAPI_FROM }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: python monitor.py --loop-minutes 9 --pass-seconds 60
+        # Pętla jest dłuższa niż odstęp crona celowo. Kolejne uruchomienia czekają
+        # w kolejce (concurrency) i startują od razu po zakończeniu poprzedniego,
+        # więc monitoring działa niemal bez przerw nawet gdy GitHub się spóźnia.
+        run: python monitor.py --loop-minutes 25 --pass-seconds 60
 
       - name: Zapisz stan (hash, migawki, historia awarii)
         if: always()
