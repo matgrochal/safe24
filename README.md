@@ -226,6 +226,23 @@ ze 160 do 70 znaków, czyli podnosi koszt.
 
 Przykład: `AWARIA Strona glowna sklepu: HTTP 502 Bad Gateway (trwa 5 min)`
 
+### Wielu odbiorców SMS
+
+Sekret `SMSAPI_TO` przyjmuje dowolną liczbę numerów rozdzielonych przecinkiem:
+
+```
+48500100200,48600200300,48700300400
+```
+
+Akceptowane są też średniki i nowe linie, a plusy, spacje i myślniki wewnątrz numeru
+są usuwane automatycznie — `+48 500 100 200, +48 600 200 300` zadziała tak samo.
+Numer 9-cyfrowy dostaje automatycznie prefiks `48`. Duplikaty i numery o nieprawidłowej
+długości są pomijane, z odpowiednim wpisem w logu.
+
+⚠️ **Każdy odbiorca to osobna, płatna wiadomość.** Trzy numery = potrójny koszt każdego
+alarmu. Blokada `sms_cooldown_minutes` działa na wpis, nie na numer, więc chroni
+przed serią SMS-ów, ale nie zmniejsza kosztu pojedynczego alarmu.
+
 ### Microsoft Teams
 
 Wymaga webhooka z aplikacji **Workflows** (Power Automate). Klasyczne webhooki
