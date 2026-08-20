@@ -499,6 +499,33 @@ SMSAPI_ERRORS = {
 }
 
 
+def normalize_recipients(raw: str) -> str:
+    """
+    Porządkuje listę numerów z SMSAPI_TO. Przyjmuje numery rozdzielone przecinkiem,
+    średnikiem, spacją lub nową linią i sprowadza je do formatu wymaganego przez
+    SMSAPI: 48500100200,48600200300 — bez plusów, spacji i myślników.
+
+    Każdy numer to osobna, płatna wiadomość.
+    """
+    # Rozdzielamy WYŁĄCZNIE po przecinku, średniku i nowej linii — nie po spacji,
+    # bo numer bywa zapisany jako „+48 500 100 200” i rozpadłby się na kawałki.
+    numbers = []
+    for part in re.split(r"[,;\n]+", raw or ""):
+        cleaned = re.sub(r"[^\d]", "", part)
+        if not cleaned:
+            continue
+        if len(cleaned) == 9:                 # numer krajowy bez prefiksu
+            cleaned = "48" + cleaned
+        if not (9 <= len(cleaned) <= 15):      # zakres numeru w standardzie E.164
+            print(f"[!] Pominięto nieprawidłowy numer w SMSAPI_TO: „{part.strip()}”")
+            continue
+        if cleaned in numbers:                # duplikat to realny, podwójny koszt
+            print(f"[i] Pominięto powtórzony numer: {cleaned}")
+            continue
+        numbers.append(cleaned)
+    return ",".join(numbers)
+
+
 def _send_sms_request(data: dict, headers: dict) -> tuple[bool, int | None]:
     """Zwraca (sukces, kod_błędu_SMSAPI). Przy awarii próbuje adresu zapasowego."""
     for url in ("https://api.smsapi.pl/sms.do", "https://api2.smsapi.pl/sms.do"):
@@ -529,10 +556,13 @@ def notify_sms(event: dict) -> bool:
     tego pola — alarm o awarii sklepu jest ważniejszy niż ładna nazwa nadawcy.
     """
     token = os.environ.get("SMSAPI_TOKEN")
-    recipients = os.environ.get("SMSAPI_TO")
+    recipients = normalize_recipients(os.environ.get("SMSAPI_TO", ""))
     if not (token and recipients):
         print("[i] SMS pominięty — brak SMSAPI_TOKEN lub SMSAPI_TO.")
         return False
+    count = recipients.count(",") + 1
+    if count > 1:
+        print(f"[i] SMS do {count} odbiorców.")
 
     sender = os.environ.get("SMSAPI_FROM", "").strip()
     text = strip_diacritics(event.get("sms") or f"{event['title']}: {event['body']}")
