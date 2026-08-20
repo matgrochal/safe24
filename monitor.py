@@ -42,6 +42,14 @@ from pathlib import Path
 import requests
 
 try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    ZoneInfo = None
+
+# Nazwa strefy czasowej wczytana z config.json (ustawiana w load_config)
+_CONFIG_TZ = [None]
+
+try:
     from bs4 import BeautifulSoup
 except ImportError:
     BeautifulSoup = None
@@ -142,7 +150,31 @@ def now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def local_tz() -> timezone | ZoneInfo:
+    """
+    Strefa czasowa do wyświetlania. Wewnętrznie monitor liczy wszystko w UTC
+    (dzięki temu zmiana czasu letni/zimowy niczego nie psuje), ale w logach
+    i powiadomieniach pokazuje godzinę lokalną.
+    """
+    name = os.environ.get("MONITOR_TZ") or _CONFIG_TZ[0] or "Europe/Warsaw"
+    if ZoneInfo is not None:
+        try:
+            return ZoneInfo(name)
+        except Exception:
+            print(f"[!] Nieznana strefa czasowa „{name}” — używam UTC.")
+    return timezone.utc
+
+
 def iso(dt: datetime) -> str:
+    """Znacznik czasu w strefie lokalnej, np. 2026-08-20 11:01 (CEST)."""
+    tz = local_tz()
+    stamp = dt.astimezone(tz).strftime("%Y-%m-%d %H:%M:%S")
+    label = dt.astimezone(tz).strftime("%Z") or "UTC"
+    return f"{stamp} ({label})"
+
+
+def iso_utc(dt: datetime) -> str:
+    """Zapis techniczny do state.json — zawsze UTC, niezależnie od strefy."""
     return dt.isoformat(timespec="seconds")
 
 
@@ -187,6 +219,7 @@ def load_config(path: Path) -> dict:
         cfg = json.load(f)
     if not cfg.get("sites"):
         raise SystemExit("Konfiguracja nie zawiera żadnych wpisów w polu 'sites'.")
+    _CONFIG_TZ[0] = cfg.get("timezone")
     return cfg
 
 
@@ -334,19 +367,90 @@ def content_hash(text: str) -> str:
 
 
 def make_diff(old: str, new: str) -> str:
-    diff = difflib.unified_diff(old.splitlines(), new.splitlines(),
-                                lineterm="", n=0, fromfile="poprzednia", tofile="aktualna")
-    out = []
-    for line in diff:
-        if line.startswith(("---", "+++", "@@")):
-            continue
-        if len(line) > MAX_DIFF_LINE_LEN:
-            line = line[:MAX_DIFF_LINE_LEN] + " […]"
-        out.append(line)
-        if len(out) >= MAX_DIFF_LINES:
-            out.append("… (dalsze zmiany pominięte)")
-            break
-    return "\n".join(out) or "(zmiana niewidoczna w tekście — np. wyłącznie w kodzie HTML)"
+    """
+    Czytelna lista różnic. Zamiast surowego wyniku unified_diff pokazuje
+    osobno usunięte i dodane fragmenty, z krótkim podsumowaniem na górze —
+    „−490 / +483” samo w sobie nic nie mówi, dopiero opis nadaje temu sens.
+    """
+    old_lines, new_lines = old.splitlines(), new.splitlines()
+    removed, added, replaced = [], [], []
+
+    matcher = difflib.SequenceMatcher(None, old_lines, new_lines, autojunk=False)
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "delete":
+            removed.extend(old_lines[i1:i2])
+        elif tag == "insert":
+            added.extend(new_lines[j1:j2])
+        elif tag == "replace":
+            # podmiana 1:1 to zwykle zmiana wartości (numer telefonu, licznik)
+            if (i2 - i1) == (j2 - j1):
+                replaced.extend(zip(old_lines[i1:i2], new_lines[j1:j2]))
+            else:
+                removed.extend(old_lines[i1:i2])
+                added.extend(new_lines[j1:j2])
+
+    # Drugie przejście: sparuj usunięte z dodanymi, jeśli to ta sama wartość
+    # w nowej postaci. Bez tego zmiana licznika produktów pokazuje się jako
+    # osobne „- 490” i „+ 483”, zamiast czytelnego „490 → 483”.
+    def only_digits(text: str) -> bool:
+        return bool(re.fullmatch(r"[\d\s\u00a0.,-]+", text.strip()))
+
+    for old_line in list(removed):
+        best, best_score = None, 0.0
+        for new_line in added:
+            if only_digits(old_line) and only_digits(new_line):
+                score = 0.9
+            else:
+                score = difflib.SequenceMatcher(None, old_line, new_line).ratio()
+            if score > best_score:
+                best, best_score = new_line, score
+        if best is not None and best_score >= 0.6:
+            replaced.append((old_line, best))
+            removed.remove(old_line)
+            added.remove(best)
+
+    def clip(text: str, limit: int = MAX_DIFF_LINE_LEN) -> str:
+        text = text.strip()
+        return text if len(text) <= limit else text[:limit] + " […]"
+
+    out, budget = [], MAX_DIFF_LINES
+
+    summary = []
+    if replaced:
+        summary.append(f"{len(replaced)} zmienionych")
+    if added:
+        summary.append(f"{len(added)} dodanych")
+    if removed:
+        summary.append(f"{len(removed)} usuniętych")
+    if summary:
+        out.append("Podsumowanie: " + ", ".join(summary) + " linii treści.")
+
+    if replaced:
+        out.append("")
+        out.append("ZMIENIONE WARTOŚCI:")
+        for before, after in replaced[:budget]:
+            out.append(f"  „{clip(before, 60)}” → „{clip(after, 60)}”")
+        budget -= min(len(replaced), budget)
+
+    if added and budget > 0:
+        out.append("")
+        out.append("POJAWIŁO SIĘ NA STRONIE:")
+        for line in added[:budget]:
+            out.append(f"  + {clip(line)}")
+        if len(added) > budget:
+            out.append(f"  … i {len(added) - budget} dalszych")
+        budget -= min(len(added), budget)
+
+    if removed and budget > 0:
+        out.append("")
+        out.append("ZNIKNĘŁO ZE STRONY:")
+        for line in removed[:budget]:
+            out.append(f"  - {clip(line)}")
+        if len(removed) > budget:
+            out.append(f"  … i {len(removed) - budget} dalszych")
+
+    return "\n".join(out).strip() or \
+        "(zmiana niewidoczna w tekście — np. wyłącznie w kodzie HTML)"
 
 
 def extract_fields(text: str, watch_fields: dict) -> dict:
@@ -410,7 +514,7 @@ def notify_discord(event: dict) -> None:
             "url": event["url"],
             "description": description[:4000],
             "color": meta["color"],
-            "timestamp": iso(now_utc()),
+            "timestamp": iso_utc(now_utc()),
         }],
     }
     _post(url, "Discord", json=payload)
@@ -621,7 +725,7 @@ def notify(event: dict, site: dict | None = None, cfg: dict | None = None,
                 print(f"[i] SMS pominięty — wysłano mniej niż {cooldown} min temu.")
                 return
         if notify_sms(event) and state_entry is not None:
-            state_entry["last_sms_at"] = iso(now_utc())
+            state_entry["last_sms_at"] = iso_utc(now_utc())
 
 
 # =========================================================================
@@ -652,7 +756,7 @@ def handle_failure(site: dict, cfg: dict, entry: dict, problem: str, hint: str,
     down_since = parse_iso(entry.get("down_since"))
     if down_since is None:
         down_since = now
-        entry["down_since"] = iso(now)
+        entry["down_since"] = iso_utc(now)
     entry["status"] = "down"
     entry["consecutive_failures"] = entry.get("consecutive_failures", 0) + 1
 
@@ -671,7 +775,7 @@ def handle_failure(site: dict, cfg: dict, entry: dict, problem: str, hint: str,
     if hint:
         body += f"\n\nCo sprawdzić: {hint}"
     body += (f"\n\nAwaria trwa: {human_duration(minutes_down)} "
-             f"(od {iso(down_since)} UTC)\nPróg alarmu: {alert_after} min")
+             f"(od {iso(down_since)})\nPróg alarmu: {alert_after} min")
     notify({
         "level": "down",
         "title": f"{site.get('name')} — awaria",
@@ -792,11 +896,13 @@ def analyse_content(site: dict, cfg: dict, entry: dict, html: str, dry_run: bool
             print("[i] Pierwsze sprawdzenie treści — zapisuję punkt odniesienia.")
         elif old_hash != digest:
             print("[!] Treść strony uległa zmianie.")
-            entry["content_changed_at"] = iso(now_utc())
+            entry["content_changed_at"] = iso_utc(now_utc())
             notify({"level": "changed", "title": f"{site['name']} — zmiana treści",
                     "url": site["url"],
                     "body": f"Wykryto zmianę zawartości strony.\n"
-                            f"Hash: {old_hash[:12]}… → {digest[:12]}…",
+                            f"Sprawdzono: {iso(now_utc())}\n\n"
+                            f"Pełna treść przed zmianą i po niej: "
+                            f"state/snapshots/{key}.txt (historia w repozytorium).",
                     "diff": make_diff(read_snapshot(key) or "", normalized)},
                    site, cfg, entry, dry_run)
         else:
@@ -951,7 +1057,7 @@ def run_pass(cfg: dict, sites: list, state: dict, dry_run: bool, force: bool) ->
             continue
 
         print(f"\n=== {site['name']} ===")
-        entry["last_check"] = iso(now_utc())
+        entry["last_check"] = iso_utc(now_utc())
         entry["url"] = site.get("url") or site.get("public_url", "")
         try:
             if site.get("type") == "flow":
@@ -1014,7 +1120,7 @@ def main() -> int:
     deadline = time.monotonic() + args.loop_minutes * 60
     first = True
     while True:
-        print(f"\n########## Przebieg {iso(now_utc())} UTC ##########")
+        print(f"\n########## Przebieg {iso(now_utc())} ##########")
         run_pass(cfg, sites, state, args.dry_run, force=bool(args.only) and first)
         first = False
         if args.loop_minutes <= 0 or time.monotonic() + args.pass_seconds > deadline:
