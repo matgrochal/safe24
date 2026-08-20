@@ -92,12 +92,12 @@
     },
     {
       "id": "sciezka-zakupowa",
-      "name": "Sciezka zakupowa (koszyk + checkout + CTA)",
+      "name": "Sciezka zakupowa (API: koszyk + dostawa + platnosc)",
       "type": "flow",
-      "enabled": false,
-      "_uwaga": "Wlacz (enabled: true) po uzupelnieniu adresu i pol formularza dodawania do koszyka - instrukcja w README, sekcja 'Scenariusz zakupowy'.",
+      "enabled": true,
+      "_uwaga": "Sklep dziala jako PWA - koszyk obsluguje API /pwaapi/. Uzupelnij URL i cialo zadania POST wg instrukcji w README (sekcja 'Scenariusz zakupowy'), potem ustaw enabled: true.",
       "public_url": "https://sklep.technica.pl/cart",
-      "check_every_minutes": 10,
+      "check_every_minutes": 22,
       "alert_after_minutes": 10,
       "notify": [
         "teams",
@@ -105,70 +105,107 @@
         "telegram",
         "sms"
       ],
+      "sms_levels": [
+        "down",
+        "up"
+      ],
       "check_content": false,
       "steps": [
         {
-          "name": "Karta produktu 450021",
+          "name": "Karta produktu i start sesji",
           "method": "GET",
           "url": "https://sklep.technica.pl/barowa-witryna-chlodnicza-do-butelek-2-drzwiowa-drzwi-przesuwane-210-l-920x515x855-mm-technica-cold-line",
           "expected_status": [
             200
           ],
-          "required_elements": {
-            "przycisk Do koszyka": "Do koszyka"
-          },
-          "extract": {
-            "product_id": "name=\"product_id\"[^>]*value=\"(\\d+)\""
-          }
+          "impact": "Klient nie moze otworzyc karty produktu ani rozpoczac zakupow.",
+          "hint": "Sprawdz dostepnosc sklepu, logi PHP i czy produkt nie zostal usuniety z oferty."
         },
         {
           "name": "Dodanie produktu do koszyka",
-          "method": "POST",
-          "url": "https://sklep.technica.pl/cart/add",
+          "method": "PATCH",
+          "url": "https://sklep.technica.pl/pwaapi/cart/me",
           "expected_status": [
             200,
-            302
+            201
           ],
-          "form": {
-            "product_id": "{product_id}",
-            "quantity": "1"
+          "json": {
+            "cartItem": {
+              "index": 0,
+              "sku": "127782",
+              "qty": 1,
+              "checked_services": [],
+              "kit": {},
+              "selected_kit_products": null,
+              "item_list_id": "monitoring",
+              "item_list_name": "Monitoring dostepnosci"
+            }
           },
+          "required_elements": {
+            "potwierdzenie API (code 200)": "\"code\"\\s*:\\s*200"
+          },
+          "impact": "Przycisk 'Do koszyka' nie dziala - klient nie moze niczego kupic. To najpowazniejsza awaria sklepu.",
+          "hint": "Sprawdz API koszyka (/pwaapi/cart/me), sesje TECHNICA_SID i logi aplikacji. Jesli sku 127782 przestalo istniec, produkt zostal wycofany - zaktualizuj config.json."
+        },
+        {
+          "name": "Odczyt koszyka",
+          "method": "GET",
+          "url": "https://sklep.technica.pl/pwaapi/cart/me",
+          "expected_status": [
+            200
+          ],
           "headers": {
-            "X-Requested-With": "XMLHttpRequest"
-          }
+            "Accept": "application/json"
+          },
+          "required_elements": {
+            "produkt sku 127782 w koszyku": "127782",
+            "niezerowa ilosc sztuk": "\"(qty|quantity)\"\\s*:\\s*[1-9]"
+          },
+          "impact": "Produkt zniknal z koszyka miedzy dodaniem a odczytem - klient traci zawartosc koszyka.",
+          "hint": "Typowy objaw problemu z sesja lub cache (Cloudflare buforuje odpowiedz koszyka) albo z magazynem - produkt mogl trafic na stan zerowy."
         },
         {
-          "name": "Koszyk z produktem",
-          "method": "GET",
-          "url": "https://sklep.technica.pl/cart",
+          "name": "Metody dostawy (etap Dostawa i Platnosc)",
+          "method": "POST",
+          "url": "https://sklep.technica.pl/pwaapi/cart/shipping-methods",
           "expected_status": [
             200
           ],
-          "required_elements": {
-            "przycisk Przejdz do kasy": "Przejdź do kasy",
-            "przycisk Zapytaj o oferte handlowca": "Zapytaj o ofertę",
-            "podsumowanie Suma brutto": "Suma brutto"
+          "json": {
+            "address": {
+              "country_id": 10,
+              "exclusions": 1
+            }
           },
-          "forbidden_text": "Twój koszyk jest pusty"
+          "required_elements": {
+            "potwierdzenie API (code 200)": "\"code\"\\s*:\\s*200",
+            "niepusta lista metod dostawy": "\"shippment_methods\"\\s*:\\s*\\[\\s*\\{",
+            "przesylka kurierska": "kurierska",
+            "co najmniej jedna metoda aktywna": "\"disabled\"\\s*:\\s*false"
+          },
+          "impact": "Klient dociera do kasy, ale nie ma w czym wybrac dostawy - zamowienie nie przejdzie dalej.",
+          "hint": "Sprawdz konfiguracje metod dostawy w panelu sklepu oraz sekcje 'exclusions' w odpowiedzi API - produkt moze byc wykluczony z wszystkich form wysylki."
         },
         {
-          "name": "Checkout z produktem",
+          "name": "Metody platnosci (etap Dostawa i Platnosc)",
           "method": "GET",
-          "url": "https://sklep.technica.pl/checkout",
+          "url": "https://sklep.technica.pl/pwaapi/cart/payment-methods",
           "expected_status": [
             200
           ],
-          "required_elements": {
-            "przycisk Zamow i zaplac": "Zam(ó|o)w i zap[łl]a(ć|c)",
-            "sekcja dostawy": "dostaw",
-            "sekcja platnosci": "p[łl]atno"
+          "headers": {
+            "Accept": "application/json"
           },
-          "forbidden_text": "Twój koszyk jest pusty"
+          "required_elements": {
+            "potwierdzenie API (code 200)": "\"code\"\\s*:\\s*200",
+            "niepusta lista metod platnosci": "\"payment_methods\"\\s*:\\s*\\[\\s*\\{",
+            "platnosc za pobraniem": "pobraniem",
+            "platnosc internetowa (ING Pay)": "ing_pay|internetowa",
+            "co najmniej jedna metoda aktywna": "\"disabled\"\\s*:\\s*false"
+          },
+          "impact": "Klient nie ma czym zaplacic - przycisk 'Zamow i zaplac' nie zadziala.",
+          "hint": "Sprawdz konfiguracje platnosci w panelu sklepu i status integracji ING Pay. Sekcja 'exclusions' w odpowiedzi pokazuje, ktore metody sa wylaczone i dlaczego."
         }
-      ],
-      "sms_levels": [
-        "down",
-        "up"
       ]
     },
     {
