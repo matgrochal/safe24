@@ -794,7 +794,9 @@ def check_flow(site: dict, cfg: dict, entry: dict, dry_run: bool) -> bool:
     variables: dict[str, str] = {}
     last_html = ""
 
-    for step in site.get("steps", []):
+    steps = site.get("steps", [])
+    total = len(steps)
+    for index, step in enumerate(steps, start=1):
         label = step.get("name", step.get("url", "krok"))
         url = step["url"].format(**variables) if variables else step["url"]
         method = step.get("method", "GET").upper()
@@ -807,27 +809,56 @@ def check_flow(site: dict, cfg: dict, entry: dict, dry_run: bool) -> bool:
             payload = {k: (v.format(**variables) if isinstance(v, str) else v)
                        for k, v in step["form"].items()}
 
+        # Sklep działa jako aplikacja PWA i rozmawia z własnym API w formacie JSON
+        # (adresy /pwaapi/...), więc krok może wysyłać ciało JSON zamiast formularza.
+        json_body = None
+        if step.get("json") is not None:
+            def fill(value):
+                if isinstance(value, str):
+                    return value.format(**variables) if variables else value
+                if isinstance(value, dict):
+                    return {k: fill(v) for k, v in value.items()}
+                if isinstance(value, list):
+                    return [fill(v) for v in value]
+                return value
+            json_body = fill(step["json"])
+
         print(f"  → {label}: {method} {url}")
         kwargs = {}
         if payload:
             kwargs["data"] = payload
-        if step.get("headers"):
-            kwargs["headers"] = step["headers"]
+        if json_body is not None:
+            kwargs["json"] = json_body
+        headers = dict(step.get("headers") or {})
+        if json_body is not None:
+            headers.setdefault("Accept", "application/json")
+        if headers:
+            kwargs["headers"] = headers
 
         resp, error = request(session, method, url, timeout, retries, delay, retry_on, **kwargs)
 
+        # Nagłówek każdego alarmu: który etap ścieżki zakupowej i co widzi klient.
+        position = f"Etap {index}/{total}: {label}"
+        impact = step.get("impact", "")
+        step_hint = step.get("hint", "")
+
+        def fail(problem: str, fallback_hint: str, code=None) -> None:
+            body = f"{position}\n\n{problem}"
+            if impact:
+                body += f"\n\nCo to oznacza dla klienta: {impact}"
+            handle_failure(site, cfg, entry, body, step_hint or fallback_hint, code, dry_run)
+
         if resp is None:
-            handle_failure(site, cfg, entry,
-                           f"Krok „{label}” nie doszedł do skutku — brak odpowiedzi serwera.\n"
-                           f"Szczegóły: {error}",
-                           "Sprawdź dostępność sklepu i certyfikat SSL.", None, dry_run)
+            fail(f"Serwer nie odpowiedział na żądanie {method} {url}\n"
+                 f"Szczegóły techniczne: {error}",
+                 "Sprawdź dostępność sklepu, DNS i certyfikat SSL.")
             return False
 
         if resp.status_code not in expected:
-            handle_failure(site, cfg, entry,
-                           f"Krok „{label}” zwrócił {status_line(resp.status_code)}\n"
-                           f"(oczekiwano {', '.join(str(c) for c in expected)})",
-                           describe_status(resp.status_code)["hint"], resp.status_code, dry_run)
+            fail(f"{status_line(resp.status_code)}\n"
+                 f"Żądanie: {method} {url}\n"
+                 f"Oczekiwano kodu: {', '.join(str(c) for c in expected)}",
+                 describe_status(resp.status_code)["hint"], resp.status_code)
             return False
 
         last_html = resp.text
@@ -836,32 +867,28 @@ def check_flow(site: dict, cfg: dict, entry: dict, dry_run: bool) -> bool:
         for name, pattern in (step.get("extract") or {}).items():
             match = re.search(pattern, resp.text, re.IGNORECASE | re.DOTALL)
             if not match:
-                handle_failure(site, cfg, entry,
-                               f"Krok „{label}”: nie udało się odczytać wartości „{name}” "
-                               f"ze strony.",
-                               "Prawdopodobnie zmienił się szablon sklepu — popraw wzorzec "
-                               "w sekcji extract w config.json.", None, dry_run)
+                fail(f"Odpowiedź serwera nie zawiera wartości „{name}”, potrzebnej "
+                     f"w kolejnych krokach.",
+                     "Prawdopodobnie zmieniła się struktura odpowiedzi API — popraw wzorzec "
+                     "w sekcji extract w config.json.")
                 return False
             variables[name] = match.group(1) if match.groups() else match.group(0)
             print(f"     odczytano {name} = {variables[name][:40]}")
 
         missing = find_missing_elements(resp.text, step.get("required_elements"))
         if missing:
-            handle_failure(site, cfg, entry,
-                           f"Krok „{label}”: strona odpowiada poprawnie (HTTP "
-                           f"{resp.status_code}), ale brakuje elementów: "
-                           + ", ".join(missing) + ".",
-                           "To oznacza, że ścieżka zakupowa jest przerwana — klient nie może "
-                           "dokończyć zamówienia, mimo że strona się otwiera.", None, dry_run)
+            fail(f"Serwer odpowiedział poprawnie (HTTP {resp.status_code}), ale w odpowiedzi "
+                 f"brakuje: " + ", ".join(missing) + ".\n"
+                 f"Żądanie: {method} {url}",
+                 "Sklep działa, lecz ten element ścieżki zakupowej zwraca niekompletne dane. "
+                 "Sprawdź konfigurację sklepu dla tego etapu.")
             return False
 
         forbidden = step.get("forbidden_text")
         if forbidden and re.search(forbidden, resp.text, re.IGNORECASE):
-            handle_failure(site, cfg, entry,
-                           f"Krok „{label}”: na stronie pojawił się komunikat, którego nie "
-                           f"powinno tam być (wzorzec: {forbidden}).",
-                           "Sprawdź, czy produkt da się dodać do koszyka i czy koszyk nie jest "
-                           "czyszczony przez błąd sesji.", None, dry_run)
+            fail(f"W odpowiedzi pojawiła się treść, której nie powinno tam być "
+                 f"(wzorzec: {forbidden}).",
+                 "Sprawdź, czy koszyk nie jest czyszczony przez błąd sesji.")
             return False
 
         print(f"     OK (HTTP {resp.status_code})")
