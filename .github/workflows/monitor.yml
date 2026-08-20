@@ -52,14 +52,31 @@ jobs:
       - name: Zapisz stan (hash, migawki, historia awarii)
         if: always()
         run: |
+          set -e
+          BRANCH="${{ github.ref_name }}"
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           mkdir -p state/snapshots
-          git add state
-          if git diff --staged --quiet; then
-            echo "Brak zmian w stanie — nic do zapisania."
-          else
-            git commit -m "chore(monitor): aktualizacja stanu [skip ci]"
-            git pull --rebase --autostash origin ${{ github.ref_name }} || true
-            git push
-          fi
+
+          # Bez rebase. Stan monitora z tego biegu jest zawsze najnowszy, więc nie
+          # ma czego scalać — wystarczy postawić go na aktualnym stanie zdalnym.
+          # Rebase powodował konflikt w state/state.json, gdy inny bieg zdążył
+          # wypchnąć swoją wersję tego samego pliku.
+          for attempt in 1 2 3; do
+            git fetch --quiet origin "$BRANCH"
+            git reset --mixed --quiet "origin/$BRANCH"
+            git add state
+            if git diff --staged --quiet; then
+              echo "Brak zmian w stanie — nic do zapisania."
+              exit 0
+            fi
+            git commit --quiet -m "chore(monitor): aktualizacja stanu [skip ci]"
+            if git push --quiet origin "HEAD:$BRANCH"; then
+              echo "Stan zapisany (próba $attempt)."
+              exit 0
+            fi
+            echo "Repozytorium zmieniło się w międzyczasie — ponawiam (próba $attempt)."
+            sleep 5
+          done
+          echo "Nie udało się zapisać stanu po 3 próbach."
+          exit 1
