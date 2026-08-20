@@ -181,6 +181,7 @@ Cena regularna:
 brutto
 Status dostępności
 2 dni
+Informacje z karty produktu
 Polecane
 STALGAST
 Szafa chłodnicza, 1-drzwiowa, ze stali malowanej, 129 l, 0,09 kW | STALGAST, 880173
@@ -429,6 +430,7 @@ Cena regularna:
 brutto
 Status dostępności
 14 dni
+Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza podblatowa, do zabudowy, z chłodzeniem statycznym, 600x600x850 mm, 160 l | LIEBHERR, FKU-1800
@@ -495,6 +497,7 @@ Cena regularna:
 brutto
 Status dostępności
 5 dni
+Informacje z karty produktu
 Polecane
 BARTSCHER
 Szafa chłodnicza z drzwiami przeszklonymi, 300 l, 440x705x1865 mm | BARTSCHER, 700812
@@ -556,6 +559,7 @@ Cena regularna:
 brutto
 Status dostępności
 14 dni
+Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza chłodzona powietrzem obiegowym z drzwiami przeszklonymi, 597x654x1684 mm, 347 l | LIEBHERR, MRFvc 3511
