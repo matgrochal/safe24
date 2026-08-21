@@ -129,19 +129,6 @@ Status dostępności
 2 dni
 Informacje z karty produktu
 Polecane
-HENDI
-Szafa chłodnicza biała 400 l | HENDI, Budget Line
-2 837,09 zł
-brutto
-Najniższa cena:
-2 837,00 zł
-brutto
-Cena regularna:
-3 833,91 zł
-brutto
-Status dostępności
-2 dni
-Polecane
 LIEBHERR
 Szafa chłodnicza do napojów butelkowych z możliwością zabudowy, 600x600x850 mm, 136 l | LIEBHERR, FKvesf-1803
 4 390,05 zł
@@ -211,6 +198,19 @@ Status dostępności
 2 dni
 Informacje z karty produktu
 Polecane
+HENDI
+Szafa chłodnicza biała 400 l | HENDI, Budget Line
+2 837,09 zł
+brutto
+Najniższa cena:
+2 837,00 zł
+brutto
+Cena regularna:
+3 833,91 zł
+brutto
+Status dostępności
+2 dni
+Polecane
 STALGAST
 Szafa chłodnicza, 1-drzwiowa, ze stali malowanej, drzwi przeszklone, 361 l, 0,13 kW | STALGAST, 880402
 3 842,00 zł
@@ -234,20 +234,6 @@ Najniższa cena:
 brutto
 Cena regularna:
 4 926,15 zł
-brutto
-Status dostępności
-2 dni
-Informacje z karty produktu
-Polecane
-ARKTIC
-Szafa chłodnicza Kitchen Line 1-drzwiowa 580 l | ARKTIC, Kitchen Line
-4 147,78 zł
-brutto
-Najniższa cena:
-4 147,00 zł
-brutto
-Cena regularna:
-5 605,11 zł
 brutto
 Status dostępności
 2 dni
@@ -637,6 +623,20 @@ Najniższa cena:
 brutto
 Cena regularna:
 6 935,97 zł
+brutto
+Status dostępności
+21 dni
+Informacje z karty produktu
+Polecane
+LIEBHERR
+Szafa chłodnicza z chłodzeniem powietrzem obiegowym, 597x654x1884 mm, 420 l | LIEBHERR, Perfection
+6 220,00 zł
+brutto
+Najniższa cena:
+6 062,85 zł
+brutto
+Cena regularna:
+7 317,27 zł
 brutto
 Status dostępności
 21 dni
