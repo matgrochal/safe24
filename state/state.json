@@ -1,8 +1,8 @@
 {
   "checkout-dostepnosc": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-22T13:06:47+00:00",
-    "last_response_time": 2.27,
+    "last_check": "2026-08-22T13:43:27+00:00",
+    "last_response_time": 1.66,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/checkout"
@@ -11,8 +11,8 @@
     "consecutive_failures": 0,
     "content_changed_at": "2026-08-21T22:06:46+00:00",
     "content_hash": "c3d26dbd914d0d41b00832ee342a2bb38820d1d46d5467a61b9ef0e3a72d9904",
-    "last_check": "2026-08-22T12:59:07+00:00",
-    "last_response_time": 1.26,
+    "last_check": "2026-08-22T13:34:35+00:00",
+    "last_response_time": 0.85,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/szafy-chlodnicze"
@@ -28,7 +28,7 @@
       "godziny_infolinia": "8:00-17:00",
       "infolinia": "BRAK"
     },
-    "last_check": "2026-08-22T12:59:05+00:00",
+    "last_check": "2026-08-22T13:34:33+00:00",
     "last_response_time": 0.74,
     "last_status_code": 200,
     "status": "up",
@@ -36,8 +36,8 @@
   },
   "koszyk-pusty": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-22T13:06:45+00:00",
-    "last_response_time": 2.23,
+    "last_check": "2026-08-22T13:43:25+00:00",
+    "last_response_time": 1.81,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/cart"
@@ -52,7 +52,7 @@
       "kod_produktu": "450021",
       "przycisk_koszyka": "Do koszyka"
     },
-    "last_check": "2026-08-22T12:59:06+00:00",
+    "last_check": "2026-08-22T13:34:34+00:00",
     "last_response_time": 0.79,
     "last_status_code": 200,
     "status": "up",
@@ -60,7 +60,7 @@
   },
   "sciezka-zakupowa": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-22T12:57:50+00:00",
+    "last_check": "2026-08-22T13:42:17+00:00",
     "status": "up",
     "url": "https://sklep.technica.pl/cart"
   },
@@ -68,8 +68,8 @@
     "consecutive_failures": 0,
     "content_changed_at": "2026-08-21T22:03:08+00:00",
     "content_hash": "a5587a0d96bbd6973f77bf79ba02bfc743ea5bdfc188c614a60852078f928f6f",
-    "last_check": "2026-08-22T13:06:43+00:00",
-    "last_response_time": 1.12,
+    "last_check": "2026-08-22T13:43:25+00:00",
+    "last_response_time": 0.75,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl"
