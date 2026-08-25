@@ -1,8 +1,8 @@
 {
   "checkout-dostepnosc": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-25T21:37:17+00:00",
-    "last_response_time": 1.51,
+    "last_check": "2026-08-25T22:08:58+00:00",
+    "last_response_time": 2.0,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/checkout"
@@ -11,8 +11,8 @@
     "consecutive_failures": 0,
     "content_changed_at": "2026-08-25T07:02:50+00:00",
     "content_hash": "9bd96d2d0921c20ecbcd454ac164844cf18dd211f6185c0c4e118d5c23ec5fb4",
-    "last_check": "2026-08-25T21:30:51+00:00",
-    "last_response_time": 0.86,
+    "last_check": "2026-08-25T22:01:08+00:00",
+    "last_response_time": 2.86,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/szafy-chlodnicze"
@@ -28,16 +28,16 @@
       "godziny_infolinia": "8:00-17:00",
       "infolinia": "BRAK"
     },
-    "last_check": "2026-08-25T21:30:49+00:00",
-    "last_response_time": 0.77,
+    "last_check": "2026-08-25T22:01:03+00:00",
+    "last_response_time": 1.49,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/kontakt"
   },
   "koszyk-pusty": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-25T21:37:15+00:00",
-    "last_response_time": 1.75,
+    "last_check": "2026-08-25T22:08:56+00:00",
+    "last_response_time": 1.98,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/cart"
@@ -52,24 +52,24 @@
       "kod_produktu": "450021",
       "przycisk_koszyka": "Do koszyka"
     },
-    "last_check": "2026-08-25T21:30:50+00:00",
-    "last_response_time": 0.93,
+    "last_check": "2026-08-25T22:01:05+00:00",
+    "last_response_time": 3.13,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/barowa-witryna-chlodnicza-do-butelek-2-drzwiowa-drzwi-przesuwane-210-l-920x515x855-mm-technica-cold-line"
   },
   "sciezka-zakupowa": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-25T21:17:47+00:00",
+    "last_check": "2026-08-25T22:06:40+00:00",
     "status": "up",
     "url": "https://sklep.technica.pl/cart"
   },
   "strona-glowna": {
     "consecutive_failures": 0,
-    "content_changed_at": "2026-08-25T09:53:02+00:00",
-    "content_hash": "3a9a3a6424ec4b32ed9ed438b7764ada9387147b784ba0a863c4db56f9200abd",
-    "last_check": "2026-08-25T21:37:14+00:00",
-    "last_response_time": 0.79,
+    "content_changed_at": "2026-08-25T22:00:58+00:00",
+    "content_hash": "b1cf3cb7bfae683ad22b6dcc00b52513fd93e82a5c6e35b77ddf0f680d6254fc",
+    "last_check": "2026-08-25T22:08:55+00:00",
+    "last_response_time": 0.81,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl"
