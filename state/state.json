@@ -1,18 +1,18 @@
 {
   "checkout-dostepnosc": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-26T06:46:11+00:00",
-    "last_response_time": 1.95,
+    "last_check": "2026-08-26T07:39:36+00:00",
+    "last_response_time": 1.54,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/checkout"
   },
   "kategoria-szafy-chlodnicze": {
     "consecutive_failures": 0,
-    "content_changed_at": "2026-08-25T07:02:50+00:00",
-    "content_hash": "9bd96d2d0921c20ecbcd454ac164844cf18dd211f6185c0c4e118d5c23ec5fb4",
-    "last_check": "2026-08-26T06:37:21+00:00",
-    "last_response_time": 0.81,
+    "content_changed_at": "2026-08-26T07:29:38+00:00",
+    "content_hash": "943d2cc82398f78748e028d9f3f04324d686a056b601f12b19b4ecc7caf694ec",
+    "last_check": "2026-08-26T07:29:34+00:00",
+    "last_response_time": 3.12,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/szafy-chlodnicze"
@@ -28,16 +28,16 @@
       "godziny_infolinia": "8:00-17:00",
       "infolinia": "BRAK"
     },
-    "last_check": "2026-08-26T06:37:20+00:00",
-    "last_response_time": 0.91,
+    "last_check": "2026-08-26T07:29:30+00:00",
+    "last_response_time": 1.9,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/kontakt"
   },
   "koszyk-pusty": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-26T06:46:09+00:00",
-    "last_response_time": 1.88,
+    "last_check": "2026-08-26T07:39:34+00:00",
+    "last_response_time": 1.69,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/cart"
@@ -52,24 +52,24 @@
       "kod_produktu": "450021",
       "przycisk_koszyka": "Do koszyka"
     },
-    "last_check": "2026-08-26T06:37:21+00:00",
-    "last_response_time": 0.75,
+    "last_check": "2026-08-26T07:29:32+00:00",
+    "last_response_time": 2.26,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/barowa-witryna-chlodnicza-do-butelek-2-drzwiowa-drzwi-przesuwane-210-l-920x515x855-mm-technica-cold-line"
   },
   "sciezka-zakupowa": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-26T06:43:54+00:00",
+    "last_check": "2026-08-26T07:37:20+00:00",
     "status": "up",
     "url": "https://sklep.technica.pl/cart"
   },
   "strona-glowna": {
     "consecutive_failures": 0,
-    "content_changed_at": "2026-08-25T22:09:16+00:00",
-    "content_hash": "b1cf3cb7bfae683ad22b6dcc00b52513fd93e82a5c6e35b77ddf0f680d6254fc",
-    "last_check": "2026-08-26T06:46:08+00:00",
-    "last_response_time": 0.93,
+    "content_changed_at": "2026-08-26T07:19:11+00:00",
+    "content_hash": "7fd4f455c78308057af0b0c5a6de922a29d2431689ba99d1759d9de14bca4e4e",
+    "last_check": "2026-08-26T07:39:33+00:00",
+    "last_response_time": 0.76,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl"
