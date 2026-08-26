@@ -30,7 +30,7 @@
       "name": "Strona glowna sklepu",
       "url": "https://sklep.technica.pl",
       "check_every_minutes": 1,
-      "alert_after_minutes": 5,
+      "alert_after_minutes": 3,
       "notify": [
         "teams",
         "discord",
