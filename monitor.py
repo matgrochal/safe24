@@ -345,6 +345,18 @@ def normalize_html(html: str, site: dict) -> str:
     text = cut_between(text, between.get("start"), between.get("end"),
                        between.get("start_occurrence", "first"))
 
+    # Wycięcie całych sekcji po kotwicach tekstowych — dla bloków, które
+    # zmieniają się same z siebie (karuzele, rotujące polecajki).
+    for section in site.get("ignore_sections") or []:
+        start, end = section.get("start"), section.get("end")
+        if not (start and end):
+            continue
+        i = text.find(start)
+        if i == -1:
+            continue
+        j = text.find(end, i + len(start))
+        text = text[:i] + (text[j:] if j != -1 else "")
+
     default_patterns = [
         r'nonce="[^"]*"',
         r'(?i)csrf[-_]?token"?\s*[:=]\s*"[^"]*"',
@@ -373,7 +385,7 @@ def make_diff(old: str, new: str) -> str:
     „−490 / +483” samo w sobie nic nie mówi, dopiero opis nadaje temu sens.
     """
     old_lines, new_lines = old.splitlines(), new.splitlines()
-    removed, added, replaced = [], [], []
+    removed, added, replaced, moved = [], [], [], []
 
     matcher = difflib.SequenceMatcher(None, old_lines, new_lines, autojunk=False)
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
@@ -405,7 +417,11 @@ def make_diff(old: str, new: str) -> str:
             if score > best_score:
                 best, best_score = new_line, score
         if best is not None and best_score >= 0.6:
-            replaced.append((old_line, best))
+            if old_line.strip() == best.strip():
+                # ta sama treść w innym miejscu — przestawienie, nie zmiana
+                moved.append(old_line)
+            else:
+                replaced.append((old_line, best))
             removed.remove(old_line)
             added.remove(best)
 
@@ -416,6 +432,8 @@ def make_diff(old: str, new: str) -> str:
     out, budget = [], MAX_DIFF_LINES
 
     summary = []
+    if moved:
+        summary.append(f"{len(moved)} przestawionych (ta sama treść)")
     if replaced:
         summary.append(f"{len(replaced)} zmienionych")
     if added:
@@ -451,6 +469,21 @@ def make_diff(old: str, new: str) -> str:
 
     return "\n".join(out).strip() or \
         "(zmiana niewidoczna w tekście — np. wyłącznie w kodzie HTML)"
+
+
+def is_only_reordered(old: str, new: str) -> bool:
+    """
+    Czy zmieniła się wyłącznie kolejność linii, a nie ich zawartość?
+
+    Sekcje typu „Nasze realizacje” czy „Ostatnio na blogu” to karuzele, które
+    przy każdym załadowaniu strony tasują swoje elementy. Treść jest ta sama,
+    zmienia się tylko układ — alarm o tym byłby fałszywy.
+    """
+    if not old or not new:
+        return False
+    old_lines = sorted(ln for ln in old.splitlines() if ln.strip())
+    new_lines = sorted(ln for ln in new.splitlines() if ln.strip())
+    return old_lines == new_lines
 
 
 def extract_fields(text: str, watch_fields: dict) -> dict:
@@ -894,6 +927,12 @@ def analyse_content(site: dict, cfg: dict, entry: dict, html: str, dry_run: bool
         entry["content_hash"] = digest
         if old_hash is None:
             print("[i] Pierwsze sprawdzenie treści — zapisuję punkt odniesienia.")
+        elif old_hash != digest and is_only_reordered(read_snapshot(key) or "", normalized) \
+                and not site.get("alert_on_reorder", cfg.get("alert_on_reorder", False)):
+            # Ten sam zestaw linii w innej kolejności — karuzela lub rotujące
+            # polecajki. Nic realnie nie zniknęło ani nie doszło, więc alarm
+            # byłby fałszywy. Hash i tak zapisujemy, żeby nie powtarzać porównania.
+            print("[=] Zmieniła się tylko kolejność elementów — alarm pominięty.")
         elif old_hash != digest:
             print("[!] Treść strony uległa zmianie.")
             entry["content_changed_at"] = iso_utc(now_utc())
