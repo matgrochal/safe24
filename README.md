@@ -27,7 +27,7 @@ Dokumentacja wdrożeniowa krok po kroku dla osoby nietechnicznej: [INSTRUKCJA.md
 
 | id | Zakres | Sprawdzane co | Alarm po | Kanały |
 |---|---|---|---|---|
-| `strona-glowna` | https://sklep.technica.pl | 1 min | **5 min** | Teams, Discord, Telegram, **SMS** |
+| `strona-glowna` | https://sklep.technica.pl | 1 min | **3 min** | Teams, Discord, Telegram, **SMS** |
 | `koszyk-pusty` | https://sklep.technica.pl/cart | 1 min | 10 min | Teams, Discord, Telegram, **SMS** |
 | `checkout-dostepnosc` | https://sklep.technica.pl/checkout | 1 min | 10 min | Teams, Discord, Telegram, **SMS** |
 | `sciezka-zakupowa` | 5-krokowy test API zakupów | 22 min | 10 min | Teams, Discord, Telegram, **SMS** |
@@ -57,7 +57,7 @@ Dwa niezależne ustawienia, **osobne dla każdego wpisu**:
 
 ```json
 "check_every_minutes": 1,     ← jak często sprawdzać
-"alert_after_minutes": 5      ← ile musi trwać awaria, zanim przyjdzie alarm
+"alert_after_minutes": 3      ← ile musi trwać awaria, zanim przyjdzie alarm
 ```
 
 Monitor zapamiętuje moment pierwszego niepowodzenia (`down_since`) i alarmuje dopiero
@@ -320,6 +320,8 @@ Każde z tych pól można nadpisać osobno w dowolnym wpisie.
 | `check_content` | czy porównywać treść i zgłaszać zmiany |
 | `content_between` | kotwice ograniczające porównanie do właściwej treści |
 | `ignore_patterns` | wyrażenia regularne wycinane przed porównaniem |
+| `ignore_sections` | całe bloki treści wycinane po kotwicach `start`/`end` |
+| `alert_on_reorder` | `true` = alarmuj też przy samym przestawieniu elementów |
 | `watch_fields` | nazwane wartości do śledzenia (cena, kontakt) |
 | `notify`, `sms_levels` | kanały i poziomy dla tego wpisu |
 
@@ -336,6 +338,37 @@ Każde z tych pól można nadpisać osobno w dowolnym wpisie.
 | `extract` | wartości do wykorzystania w kolejnych krokach jako `{nazwa}` |
 | `impact` | opis skutku dla klienta, trafia do treści alarmu |
 | `hint` | podpowiedź diagnostyczna, trafia do treści alarmu |
+
+### Fałszywe alarmy z sekcji rotujących
+
+Strona główna zawiera karuzelę „Nasze realizacje", która przy każdym załadowaniu tasuje
+kolejność projektów. Treść jest identyczna, zmienia się tylko układ — a hash i tak
+wychodzi inny. Objawia się to alarmem z parami w rodzaju
+`„Stacja Buła Burgerownia" → „Stacja Buła Burgerownia"`.
+
+Monitor rozpoznaje taką sytuację sam: jeśli **zbiór linii jest ten sam, a różni się
+wyłącznie kolejność**, alarm nie jest wysyłany, a w logu pojawia się wpis
+`Zmieniła się tylko kolejność elementów — alarm pominięty`. Realne dodanie lub usunięcie
+elementu nadal jest wykrywane normalnie.
+
+Gdybyś chciał alarmy również przy samym przestawieniu:
+
+```json
+"alert_on_reorder": true
+```
+
+Jeśli karuzela pokazuje **losowy podzbiór** elementów (a nie wszystkie w innej kolejności),
+powyższy mechanizm nie wystarczy — wtedy wytnij całą sekcję z porównania:
+
+```json
+"ignore_sections": [
+  { "start": "Nasze realizacje", "end": "Zestawy TECHNICA" }
+]
+```
+
+Sekcja jest wycinana od pierwszego wystąpienia tekstu `start` do tekstu `end`.
+Można podać kilka takich bloków. Uwaga: wycięta sekcja przestaje być monitorowana
+w całości — realna zmiana w niej też nie zostanie zauważona.
 
 ### Dlaczego treść porównywana jest tylko fragmentami
 
@@ -374,6 +407,7 @@ z wzorcami.
 | `DISCORD_WEBHOOK_URL` | Discord |
 | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` | Telegram |
 | `SMSAPI_TOKEN` + `SMSAPI_TO` + `SMSAPI_FROM` | SMS |
+| `MONITOR_TOKEN` | wartość nagłówka rozpoznawczego dla WAF (opcjonalne) |
 
 Każdy kanał jest opcjonalny — skrypt pomija ten, dla którego nie ma sekretu.
 
@@ -412,6 +446,30 @@ API po aktualizacji AtomStore, wykluczenie produktu z metod dostawy w panelu skl
 
 Ustaw dla danego wpisu `"check_content": false` albo dopisz regułę do `ignore_patterns`.
 Listingi kategorii potrafią rotować kolejność produktów.
+
+### Wszystkie adresy naraz zwracają 403 (blokada monitora)
+
+Jeśli w tej samej sekundzie strona główna, koszyk, checkout, kontakt, produkt i kategoria
+zaczynają zwracać ten sam kod 403 — to nie jest awaria sklepu. Prawdziwa awaria rzadko
+obejmuje wszystko naraz co do sekundy. To zapora (WAF/Cloudflare) odcięła bota
+monitorującego.
+
+Monitor rozpoznaje taką sytuację sam: gdy co najmniej `block_detection_min_sites`
+(domyślnie 3) wpisów jest jednocześnie w awarii z tym samym kodem 401/403/429, alarm
+zmienia tytuł na **„prawdopodobna blokada monitora"** i zaczyna się od zdania, że sklep
+najprawdopodobniej działa. SMS też jest inny — informuje o blokadzie, nie o awarii.
+
+**Trwałe rozwiązanie:** ustaw sekret `MONITOR_TOKEN` (dowolny losowy ciąg) i poproś
+administratora Cloudflare o regułę WAF typu *Skip* dla żądań z nagłówkiem
+`X-Monitor-Token` o tej wartości. Nazwę nagłówka można zmienić przez `MONITOR_HEADER`.
+
+Białą listą adresów IP tego nie załatwisz — GitHub Actions korzysta ze zmiennej puli
+adresów. Alternatywa: reguła po nazwie `User-Agent` (`TechnicaMonitorBot`), słabsza,
+bo nagłówek ten może podszyć ktokolwiek.
+
+**Doraźnie** można też zmniejszyć częstotliwość — trzy wpisy sprawdzane co minutę to
+około 4 320 żądań dziennie, co bywa progiem zadziałania rate limitera. Zmiana
+`check_every_minutes` z 1 na 2 zmniejsza ruch o połowę.
 
 ### Alarm HTTP 403 przy działającym sklepie
 
