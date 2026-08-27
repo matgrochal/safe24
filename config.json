@@ -1,6 +1,7 @@
 {
   "_komentarz": "check_every_minutes = jak czesto sprawdzac; alert_after_minutes = jak dlugo musi trwac awaria zanim przyjdzie alarm; notify = kanaly powiadomien dla tego wpisu",
   "timezone": "Europe/Warsaw",
+  "block_detection_min_sites": 3,
   "timeout_seconds": 20,
   "retries": 2,
   "retry_delay_seconds": 5,
