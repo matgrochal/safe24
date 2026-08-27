@@ -265,6 +265,12 @@ def build_session(user_agent: str) -> requests.Session:
         "Accept": "text/html,application/xhtml+xml",
         "Accept-Language": "pl,en;q=0.8",
     })
+    # Opcjonalny nagłówek rozpoznawczy dla zapory. Adresy IP GitHub Actions są
+    # zmienne, więc nie da się ich wpisać na białą listę — sekretny nagłówek
+    # pozwala administratorowi Cloudflare przepuścić monitor regułą "skip".
+    token = os.environ.get("MONITOR_TOKEN")
+    if token:
+        s.headers[os.environ.get("MONITOR_HEADER", "X-Monitor-Token")] = token
     return s
 
 
@@ -779,6 +785,37 @@ def is_immediate(code: int | None, rules: list) -> bool:
     return False
 
 
+_STATE_REF: list = [None]
+
+# Kody, które zapora zwraca przy blokadzie ruchu — nie oznaczają awarii sklepu
+BLOCK_CODES = {401, 403, 429}
+
+
+def count_failing_with_code(code: int | None) -> int:
+    """Ile monitorowanych wpisów jest w tej chwili w awarii z tym samym kodem."""
+    state = _STATE_REF[0]
+    if not state or code is None:
+        return 0
+    return sum(1 for e in state.values()
+               if isinstance(e, dict) and e.get("status") == "down"
+               and e.get("last_status_code") == code)
+
+
+def looks_like_block(code: int | None, cfg: dict) -> bool:
+    """
+    Czy to blokada monitora, a nie awaria sklepu?
+
+    Jeśli wszystkie monitorowane adresy naraz zwracają ten sam kod 401/403/429,
+    to niemal na pewno zapora (WAF/Cloudflare) odcięła bota monitorującego —
+    prawdziwa awaria rzadko dotyka jednocześnie strony głównej, koszyka,
+    kontaktu i API w tej samej sekundzie.
+    """
+    if code not in BLOCK_CODES:
+        return False
+    minimum = cfg.get("block_detection_min_sites", 3)
+    return count_failing_with_code(code) >= minimum
+
+
 def handle_failure(site: dict, cfg: dict, entry: dict, problem: str, hint: str,
                    code: int | None, dry_run: bool) -> None:
     """Zapisuje awarię i alarmuje dopiero po przekroczeniu progu czasowego."""
@@ -804,18 +841,41 @@ def handle_failure(site: dict, cfg: dict, entry: dict, problem: str, hint: str,
         return
 
     entry["alerted_down"] = True
+    blocked = looks_like_block(code, cfg)
+    affected = count_failing_with_code(code) if blocked else 0
+
     body = problem
+    if blocked:
+        body = (f"UWAGA: prawdopodobnie NIE jest to awaria sklepu, tylko blokada "
+                f"monitora przez zaporę.\n"
+                f"Ten sam kod HTTP {code} zwraca w tej chwili {affected} monitorowanych "
+                f"adresów jednocześnie — od strony głównej po API koszyka. Prawdziwa awaria "
+                f"rzadko obejmuje wszystko naraz w tej samej sekundzie.\n\n"
+                f"Zanim zaczniesz szukać usterki: otwórz sklep w przeglądarce. "
+                f"Jeśli działa, problem dotyczy wyłącznie monitoringu.\n\n" + problem)
+        hint = ("Poproś administratora o wyjątek w regułach WAF/Cloudflare dla monitora — "
+                "albo po nazwie User-Agent (TechnicaMonitorBot), albo regułą 'skip' "
+                "na sekretny nagłówek (zmienna MONITOR_TOKEN). Adresy IP GitHub Actions "
+                "są zmienne, więc biała lista IP się tu nie sprawdzi.")
     if hint:
         body += f"\n\nCo sprawdzić: {hint}"
     body += (f"\n\nAwaria trwa: {human_duration(minutes_down)} "
              f"(od {iso(down_since)})\nPróg alarmu: {alert_after} min")
+
+    title = (f"{site.get('name')} — prawdopodobna blokada monitora"
+             if blocked else f"{site.get('name')} — awaria")
+    sms = (f"UWAGA monitoring: HTTP {code} na {affected} adresach naraz - prawdopodobnie "
+           f"blokada WAF, nie awaria sklepu. Sprawdz sklep w przegladarce."
+           if blocked else
+           f"AWARIA {site.get('name')}: {problem.splitlines()[0]} "
+           f"(trwa {human_duration(minutes_down)})")
+
     notify({
         "level": "down",
-        "title": f"{site.get('name')} — awaria",
+        "title": title,
         "url": site.get("url") or site.get("public_url", "https://sklep.technica.pl"),
         "body": body,
-        "sms": f"AWARIA {site.get('name')}: {problem.splitlines()[0]} "
-               f"(trwa {human_duration(minutes_down)})",
+        "sms": sms,
     }, site, cfg, entry, dry_run)
 
 
@@ -1089,6 +1149,7 @@ def due_for_check(site: dict, cfg: dict, entry: dict) -> bool:
 
 
 def run_pass(cfg: dict, sites: list, state: dict, dry_run: bool, force: bool) -> None:
+    _STATE_REF[0] = state
     for site in sites:
         key = site["_key"]
         entry = state.setdefault(key, {})
