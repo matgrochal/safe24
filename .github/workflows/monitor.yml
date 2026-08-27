@@ -40,6 +40,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
           TEAMS_PAYLOAD: adaptive
+          MONITOR_TOKEN: ${{ secrets.MONITOR_TOKEN }}
           SMSAPI_TOKEN: ${{ secrets.SMSAPI_TOKEN }}
           SMSAPI_TO: ${{ secrets.SMSAPI_TO }}
           SMSAPI_FROM: ${{ secrets.SMSAPI_FROM }}
