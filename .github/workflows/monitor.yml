@@ -4,7 +4,6 @@ on:
   schedule:
     # Nierówne minuty zamiast */10 — GitHub uruchamia najwięcej zadań o pełnych
     # dziesiątkach (:00, :10, :20), więc kolejka jest wtedy najdłuższa.
-    # Przesunięcie o 3 minuty realnie skraca oczekiwanie.
     - cron: "3,13,23,33,43,53 * * * *"
   workflow_dispatch:          # ręczne uruchomienie z zakładki Actions
 
@@ -18,7 +17,7 @@ concurrency:
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 12
 
     steps:
       - name: Pobierz repozytorium
@@ -33,7 +32,7 @@ jobs:
       - name: Zainstaluj zależności
         run: pip install -r requirements.txt
 
-      - name: Monitoruj sklep przez ~25 minut
+      - name: Monitoruj sklep przez ~8 minut
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -45,10 +44,11 @@ jobs:
           SMSAPI_TO: ${{ secrets.SMSAPI_TO }}
           SMSAPI_FROM: ${{ secrets.SMSAPI_FROM }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        # Pętla jest dłuższa niż odstęp crona celowo. Kolejne uruchomienia czekają
-        # w kolejce (concurrency) i startują od razu po zakończeniu poprzedniego,
-        # więc monitoring działa niemal bez przerw nawet gdy GitHub się spóźnia.
-        run: python monitor.py --loop-minutes 25 --pass-seconds 60
+        # Pętla MUSI być krótsza niż odstęp crona (8 min < 10 min). Gdy bieg
+        # jeszcze trwa, GitHub odrzuca kolejne wyzwolenia z tej samej grupy
+        # concurrency — dłuższa pętla zjadała więc własne uruchomienia i zamiast
+        # ciągłego monitoringu dawała wielogodzinne luki.
+        run: python monitor.py --loop-minutes 8 --pass-seconds 60
 
       - name: Zapisz stan (hash, migawki, historia awarii)
         if: always()
