@@ -76,12 +76,13 @@ Zastosowane rozwiązanie:
 
 - **cron na nierównych minutach** (`3,13,23,33,43,53`). Najwięcej zadań na GitHubie
   startuje o pełnych dziesiątkach, więc kolejka jest wtedy najdłuższa.
-- **pętla wewnątrz uruchomienia** — skrypt pracuje 25 minut, wykonując przebieg co 60 s
-  (`--loop-minutes 25 --pass-seconds 60`). W każdym przebiegu sprawdzane są tylko te wpisy,
+- **pętla wewnątrz uruchomienia** — skrypt pracuje 8 minut, wykonując przebieg co 60 s
+  (`--loop-minutes 8 --pass-seconds 60`). W każdym przebiegu sprawdzane są tylko te wpisy,
   którym minął ich własny `check_every_minutes`.
-- **pętla dłuższa niż odstęp crona** — kolejne uruchomienia czekają w kolejce
-  (`concurrency`) i startują natychmiast po zakończeniu poprzedniego. Dzięki temu nawet
-  przy 30-minutowym opóźnieniu GitHuba monitoring działa niemal bez przerw.
+- **pętla KRÓTSZA niż odstęp crona** (8 min < 10 min). To kluczowe: gdy bieg jeszcze trwa,
+  GitHub odrzuca kolejne wyzwolenia z tej samej grupy `concurrency`. Pętla dłuższa niż cron
+  zjada więc własne uruchomienia — w praktyce dawało to wielogodzinne luki zamiast ciągłego
+  monitoringu.
 
 ---
 
