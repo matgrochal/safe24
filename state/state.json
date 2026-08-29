@@ -1,8 +1,8 @@
 {
   "checkout-dostepnosc": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-29T21:12:28+00:00",
-    "last_response_time": 2.74,
+    "last_check": "2026-08-29T23:23:48+00:00",
+    "last_response_time": 2.22,
     "last_sms_at": "2026-08-26T11:06:30+00:00",
     "last_status_code": 200,
     "status": "up",
@@ -10,10 +10,10 @@
   },
   "kategoria-szafy-chlodnicze": {
     "consecutive_failures": 0,
-    "content_changed_at": "2026-08-28T00:25:34+00:00",
-    "content_hash": "d1e66a52a23f22ef44daa48babea7ccd7a29efa567c730d18195cc848727c9be",
-    "last_check": "2026-08-29T21:04:54+00:00",
-    "last_response_time": 1.32,
+    "content_changed_at": "2026-08-29T23:16:12+00:00",
+    "content_hash": "178d8e5ac4e6fc9af1389494eeb49a6c775fb246d6195b0f265ebe92814a006b",
+    "last_check": "2026-08-29T23:16:10+00:00",
+    "last_response_time": 1.21,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/szafy-chlodnicze"
@@ -29,16 +29,16 @@
       "godziny_infolinia": "8:00-17:00",
       "infolinia": "BRAK"
     },
-    "last_check": "2026-08-29T21:04:53+00:00",
-    "last_response_time": 0.56,
+    "last_check": "2026-08-29T23:16:08+00:00",
+    "last_response_time": 1.07,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/kontakt"
   },
   "koszyk-pusty": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-29T21:12:27+00:00",
-    "last_response_time": 1.75,
+    "last_check": "2026-08-29T23:23:45+00:00",
+    "last_response_time": 2.6,
     "last_sms_at": "2026-08-26T11:06:27+00:00",
     "last_status_code": 200,
     "status": "up",
@@ -54,15 +54,15 @@
       "kod_produktu": "450021",
       "przycisk_koszyka": "Do koszyka"
     },
-    "last_check": "2026-08-29T21:04:53+00:00",
-    "last_response_time": 0.85,
+    "last_check": "2026-08-29T23:16:09+00:00",
+    "last_response_time": 1.12,
     "last_status_code": 200,
     "status": "up",
     "url": "https://sklep.technica.pl/barowa-witryna-chlodnicza-do-butelek-2-drzwiowa-drzwi-przesuwane-210-l-920x515x855-mm-technica-cold-line"
   },
   "sciezka-zakupowa": {
     "consecutive_failures": 0,
-    "last_check": "2026-08-29T21:04:44+00:00",
+    "last_check": "2026-08-29T23:15:57+00:00",
     "last_sms_at": "2026-08-26T11:18:44+00:00",
     "status": "up",
     "url": "https://sklep.technica.pl/cart"
@@ -70,9 +70,9 @@
   "strona-glowna": {
     "consecutive_failures": 0,
     "content_changed_at": "2026-08-26T07:19:11+00:00",
-    "content_hash": "1f7735d197fe29e8c3f3f5140e9e2a9459dfd825d4199be1ee87ddb9d206b821",
-    "last_check": "2026-08-29T21:12:26+00:00",
-    "last_response_time": 0.76,
+    "content_hash": "9e8d34378ce7ab8a473de1927c67443d29cf0cd3bef72c6ee3b50bc73a967a66",
+    "last_check": "2026-08-29T23:23:44+00:00",
+    "last_response_time": 1.09,
     "last_sms_at": "2026-08-26T11:32:19+00:00",
     "last_status_code": 200,
     "status": "up",

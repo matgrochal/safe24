@@ -17,13 +17,13 @@ Czytaj więcej
 Polecane
 TECHNICA
 Barowa witryna chłodnicza do butelek, 1-drzwiowa, drzwi uchylne, 133 l, 600x515x855 mm | TECHNICA, Cold Line
-1 444,00 zł
+1null444null00 zł
 brutto
 Najniższa cena:
-1 521,00 zł
+1null521null00 zł
 brutto
 Cena regularna:
-2 611,08 zł
+2null611null08 zł
 brutto
 Status dostępności
 2 dni
@@ -31,13 +31,13 @@ Informacje z karty produktu
 Polecane
 TECHNICA
 Barowa witryna chłodnicza do butelek, 2-drzwiowa, drzwi przesuwane, 210 l, 920x515x855 mm | TECHNICA, Cold Line
-1 915,00 zł
+1null915null00 zł
 brutto
 Najniższa cena:
-2 016,00 zł
+2null016null00 zł
 brutto
 Cena regularna:
-3 482,71 zł
+3null482null71 zł
 brutto
 Status dostępności
 2 dni
@@ -45,13 +45,13 @@ Informacje z karty produktu
 Polecane
 TECHNICA
 Barowa witryna chłodnicza do butelek, 3-drzwiowa, drzwi przesuwane, 314 l, 1350x515x855 mm | TECHNICA, Cold Line
-2 679,00 zł
+2null679null00 zł
 brutto
 Najniższa cena:
-2 821,00 zł
+2null821null00 zł
 brutto
 Cena regularna:
-4 749,61 zł
+4null749null61 zł
 brutto
 Status dostępności
 2 dni
@@ -59,13 +59,13 @@ Informacje z karty produktu
 Bestseller
 TECHNICA
 Szafa chłodnicza 1-drzwiowa 650 l, 740x830x2010 mm | TECHNICA, Cold Line
-4 133,00 zł
+4null133null00 zł
 brutto
 Najniższa cena:
-4 351,00 zł
+4null351null00 zł
 brutto
 Cena regularna:
-5 495,81 zł
+5null495null81 zł
 brutto
 Status dostępności
 2 dni
@@ -73,13 +73,13 @@ Informacje z karty produktu
 Bestseller
 TECHNICA
 Szafa chłodnicza 2-drzwiowa 1300 l, 1480x830x2010 mm | TECHNICA, Cold Line
-6 487,00 zł
+6null487null00 zł
 brutto
 Najniższa cena:
-6 829,00 zł
+6null829null00 zł
 brutto
 Cena regularna:
-8 625,06 zł
+8null625null06 zł
 brutto
 Status dostępności
 2 dni
@@ -87,13 +87,13 @@ Informacje z karty produktu
 Polecane
 TECHNICA
 Barowa witryna chłodnicza do butelek, 2-drzwiowa, drzwi uchylne, 210 l, 920x515x855 mm | TECHNICA, Cold Line
-2 342,00 zł
+2null342null00 zł
 brutto
 Najniższa cena:
-2 466,00 zł
+2null466null00 zł
 brutto
 Cena regularna:
-3 325,61 zł
+3null325null61 zł
 brutto
 Status dostępności
 2 dni
@@ -101,13 +101,13 @@ Informacje z karty produktu
 Polecane
 TECHNICA
 Witryna chłodnicza do butelek, 1-drzwiowa, drzwi uchylne, 292 l, 600x515x1815 mm | TECHNICA, Cold Line
-2 721,00 zł
+2null721null00 zł
 brutto
 Najniższa cena:
-2 865,00 zł
+2null865null00 zł
 brutto
 Cena regularna:
-5 383,81 zł
+5null383null81 zł
 brutto
 Status dostępności
 2 dni
@@ -115,13 +115,13 @@ Informacje z karty produktu
 Polecane
 TECHNICA
 Witryna chłodnicza do butelek, 2-drzwiowa, drzwi uchylne, 466 l, 920x515x1815 mm | TECHNICA, Cold Line
-4 573,00 zł
+4null573null00 zł
 brutto
 Najniższa cena:
-4 814,00 zł
+4null814null00 zł
 brutto
 Cena regularna:
-8 076,49 zł
+8null076null49 zł
 brutto
 Status dostępności
 2 dni
@@ -129,26 +129,26 @@ Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza do napojów butelkowych z możliwością zabudowy, 600x600x850 mm, 136 l | LIEBHERR, FKvesf-1803
-4 390,05 zł
+4null390null05 zł
 brutto
 Najniższa cena:
-4 390,05 zł
+4null390null05 zł
 brutto
 Cena regularna:
-5 164,77 zł
+5null164null77 zł
 brutto
 Status dostępności
 2 dni
 Polecane
 LIEBHERR
 Szafa chłodnicza z chłodzeniem powietrzem obiegowym, 747x769x2018 mm, 479 l | LIEBHERR, Perfection
-9 283,00 zł
+9null283null00 zł
 brutto
 Najniższa cena:
-9 052,98 zł
+9null052null98 zł
 brutto
 Cena regularna:
-10 921,17 zł
+10null921null17 zł
 brutto
 Status dostępności
 2 dni
@@ -156,13 +156,13 @@ Informacje z karty produktu
 Polecane
 HENDI
 Szafa chłodnicza biała 200 l | HENDI, Budget Line
-1 783,99 zł
+1null783null99 zł
 brutto
 Najniższa cena:
-1 783,00 zł
+1null783null00 zł
 brutto
 Cena regularna:
-2 410,80 zł
+2null410null80 zł
 brutto
 Status dostępności
 2 dni
@@ -170,13 +170,13 @@ Informacje z karty produktu
 Polecane
 STALGAST
 Szafa chłodnicza, 1-drzwiowa, ze stali malowanej, 129 l, 0,09 kW | STALGAST, 880173
-2 151,00 zł
+2null151null00 zł
 brutto
 Najniższa cena:
-1 901,09 zł
+1null901null09 zł
 brutto
 Cena regularna:
-2 687,55 zł
+2null687null55 zł
 brutto
 Status dostępności
 2 dni
@@ -184,13 +184,13 @@ Informacje z karty produktu
 Polecane
 STALGAST
 Szafa chłodnicza, 1-drzwiowa, ze stali malowanej, 361 l, 0,13 kW | STALGAST, 880400
-2 441,00 zł
+2null441null00 zł
 brutto
 Najniższa cena:
-3 050,40 zł
+3null050null40 zł
 brutto
 Cena regularna:
-3 050,40 zł
+3null050null40 zł
 brutto
 Status dostępności
 2 dni
@@ -198,13 +198,13 @@ Informacje z karty produktu
 Polecane
 STALGAST
 Szafa chłodnicza, 1-drzwiowa, ze stali nierdzewnej, 129 l, 0,09 kW | STALGAST, 880175
-2 593,00 zł
+2null593null00 zł
 brutto
 Najniższa cena:
-2 297,15 zł
+2null297null15 zł
 brutto
 Cena regularna:
-3 241,05 zł
+3null241null05 zł
 brutto
 Status dostępności
 2 dni
@@ -212,13 +212,13 @@ Informacje z karty produktu
 Polecane
 STALGAST
 Szafa chłodnicza, 1-drzwiowa, ze stali malowanej, 620 l, 0,13 kW | STALGAST, 880600
-2 775,00 zł
+2null775null00 zł
 brutto
 Najniższa cena:
-3 468,60 zł
+3null468null60 zł
 brutto
 Cena regularna:
-3 468,60 zł
+3null468null60 zł
 brutto
 Status dostępności
 2 dni
@@ -226,26 +226,26 @@ Informacje z karty produktu
 Polecane
 HENDI
 Szafa chłodnicza biała 400 l | HENDI, Budget Line
-2 837,09 zł
+2null837null09 zł
 brutto
 Najniższa cena:
-2 837,00 zł
+2null837null00 zł
 brutto
 Cena regularna:
-3 833,91 zł
+3null833null91 zł
 brutto
 Status dostępności
 2 dni
 Polecane
 STALGAST
 Szafa chłodnicza, 1-drzwiowa, ze stali malowanej, drzwi przeszklone, 620 l, 0,13 kW | STALGAST, 880604
-2 913,00 zł
+2null913null00 zł
 brutto
 Najniższa cena:
-3 640,80 zł
+3null640null80 zł
 brutto
 Cena regularna:
-3 640,80 zł
+3null640null80 zł
 brutto
 Status dostępności
 2 dni
@@ -253,13 +253,13 @@ Informacje z karty produktu
 Polecane
 STALGAST
 Szafa chłodnicza, 1-drzwiowa, ze stali malowanej, drzwi przeszklone, 361 l, 0,13 kW | STALGAST, 880402
-3 842,00 zł
+3null842null00 zł
 brutto
 Najniższa cena:
-3 552,00 zł
+3null552null00 zł
 brutto
 Cena regularna:
-4 803,15 zł
+4null803null15 zł
 brutto
 Status dostępności
 2 dni
@@ -267,13 +267,13 @@ Informacje z karty produktu
 Polecane
 ARKTIC
 Szafa chłodnicza Kitchen Line 1-drzwiowa 580 l | ARKTIC, Kitchen Line
-4 147,78 zł
+4null147null78 zł
 brutto
 Najniższa cena:
-4 147,00 zł
+4null147null00 zł
 brutto
 Cena regularna:
-5 605,11 zł
+5null605null11 zł
 brutto
 Status dostępności
 2 dni
@@ -281,13 +281,13 @@ Informacje z karty produktu
 Polecane
 ARKTIC
 Szafa chłodnicza 1-drzwiowa 410 l, 600x740x1950 mm | ARKTIC, Profi Line
-4 522,78 zł
+4null522null78 zł
 brutto
 Najniższa cena:
-4 522,00 zł
+4null522null00 zł
 brutto
 Cena regularna:
-6 111,87 zł
+6null111null87 zł
 brutto
 Status dostępności
 2 dni
@@ -295,13 +295,13 @@ Informacje z karty produktu
 Polecane
 STALGAST
 Szafa chłodnicza, 1-drzwiowa, ze stali nierdzewnej, 620 l, 0,13 kW | STALGAST, 880602
-5 235,00 zł
+5null235null00 zł
 brutto
 Najniższa cena:
-4 633,90 zł
+4null633null90 zł
 brutto
 Cena regularna:
-6 543,60 zł
+6null543null60 zł
 brutto
 Status dostępności
 2 dni
@@ -309,13 +309,13 @@ Informacje z karty produktu
 Polecane
 STALGAST
 Szafa chłodnicza ze stali nierdzewnej, GN 2/1, 600 l, 0,175 kW, 680x810x2010 mm | STALGAST, 830590
-5 408,00 zł
+5null408null00 zł
 brutto
 Najniższa cena:
-4 786,67 zł
+4null786null67 zł
 brutto
 Cena regularna:
-6 758,85 zł
+6null758null85 zł
 brutto
 Status dostępności
 2 dni
@@ -323,13 +323,13 @@ Informacje z karty produktu
 Polecane
 STALGAST
 Szafa chłodnicza ze stali nierdzewnej, GN 2/1, 650 l, 0,215 kW, 740x830x2010 mm | STALGAST, 830620
-5 663,00 zł
+5null663null00 zł
 brutto
 Najniższa cena:
-5 012,99 zł
+5null012null99 zł
 brutto
 Cena regularna:
-7 078,65 zł
+7null078null65 zł
 brutto
 Status dostępności
 2 dni
@@ -337,13 +337,13 @@ Informacje z karty produktu
 Polecane
 ARKTIC
 Szafa chłodnicza Kitchen Line 2-drzwiowa 1300 l | ARKTIC, Kitchen Line
-5 925,40 zł
+5null925null40 zł
 brutto
 Najniższa cena:
-5 925,00 zł
+5null925null00 zł
 brutto
 Cena regularna:
-8 007,30 zł
+8null007null30 zł
 brutto
 Status dostępności
 2 dni
@@ -351,13 +351,13 @@ Informacje z karty produktu
 Polecane
 ARKTIC
 Szafa chłodnicza dwudrzwiowa 1260 l, -2/+8 stopni Celsjusza | ARKTIC, Profi Line
-7 209,69 zł
+7null209null69 zł
 brutto
 Najniższa cena:
-7 209,00 zł
+7null209null00 zł
 brutto
 Cena regularna:
-9 742,83 zł
+9null742null83 zł
 brutto
 Status dostępności
 2 dni
@@ -365,13 +365,13 @@ Informacje z karty produktu
 Polecane
 ARKTIC
 Szafa chłodnicza cukiernicza 1-drzwiowa, 740x990x2010 mm | ARKTIC, 237809
-7 736,70 zł
+7null736null70 zł
 brutto
 Najniższa cena:
-7 736,00 zł
+7null736null00 zł
 brutto
 Cena regularna:
-10 455,00 zł
+10null455null00 zł
 brutto
 Status dostępności
 2 dni
@@ -379,52 +379,52 @@ Informacje z karty produktu
 Polecane
 STALGAST
 Szafa chłodnicza 2 drzwiowa ze stali nierdzewnej, GN 2/1, 1300 l, 0,44 kW, 1480x830x2010 mm | STALGAST, 830130
-9 048,00 zł
+9null048null00 zł
 brutto
 Najniższa cena:
-8 011,73 zł
+8null011null73 zł
 brutto
 Cena regularna:
-11 309,85 zł
+11null309null85 zł
 brutto
 Status dostępności
 2 dni
 Informacje z karty produktu
 GREDIL
 Szafa chłodnicza lakierowana, wnętrze z ABS, 695x695x1890 mm, 570 l | GREDIL, 886600
-2 547,00 zł
+2null547null00 zł
 brutto
 Najniższa cena:
-2 829,00 zł
+2null829null00 zł
 brutto
 Cena regularna:
-2 829,00 zł
+2null829null00 zł
 brutto
 Status dostępności
 2 dni
 Informacje z karty produktu
 BARTSCHER
 Szafa chłodnicza z przeszklonymi drzwiami, 63 l, 0,06 kW, 430x555x675 mm, inox | BARTSCHER, GTK3-121
-2 423,00 zł
+2null423null00 zł
 brutto
 Najniższa cena:
-2 552,00 zł
+2null552null00 zł
 brutto
 Cena regularna:
-3 189,39 zł
+3null189null39 zł
 brutto
 Status dostępności
 2 dni
 Polecane
 BARTSCHER
 Barowa szafa chłodnicza 124 l, 600x500x850 mm | BARTSCHER, 700121
-2 844,00 zł
+2null844null00 zł
 brutto
 Najniższa cena:
-2 995,00 zł
+2null995null00 zł
 brutto
 Cena regularna:
-3 742,89 zł
+3null742null89 zł
 brutto
 Status dostępności
 14 dni
@@ -432,39 +432,39 @@ Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza podblatowa, do zabudowy, z chłodzeniem statycznym, 600x600x850 mm, 160 l | LIEBHERR, FKU-1800
-3 072,72 zł
+3null072null72 zł
 brutto
 Najniższa cena:
-3 073,00 zł
+3null073null00 zł
 brutto
 Cena regularna:
-3 614,97 zł
+3null614null97 zł
 brutto
 Status dostępności
 21 dni
 Polecane
 LIEBHERR
 Szafa chłodnicza podblatowa, do zabudowy, z chłodzeniem statycznym, 600x600x850 mm, 160 l | LIEBHERR, FKU-1805
-3 344,55 zł
+3null344null55 zł
 brutto
 Najniższa cena:
-3 345,00 zł
+3null345null00 zł
 brutto
 Cena regularna:
-3 934,77 zł
+3null934null77 zł
 brutto
 Status dostępności
 21 dni
 Polecane
 BARTSCHER
 Szafa chłodnicza z drzwiami przeszklonymi, 360 l, 620x635x1760 mm | BARTSCHER, 700834
-3 642,00 zł
+3null642null00 zł
 brutto
 Najniższa cena:
-3 835,00 zł
+3null835null00 zł
 brutto
 Cena regularna:
-4 793,31 zł
+4null793null31 zł
 brutto
 Status dostępności
 14 dni
@@ -472,26 +472,26 @@ Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza podblatowa z dynamicznym chłodzeniem biała, 600x615x830 mm, 130 l | LIEBHERR, FKUv-1610
-3 710,48 zł
+3null710null48 zł
 brutto
 Najniższa cena:
-3 710,48 zł
+3null710null48 zł
 brutto
 Cena regularna:
-4 365,27 zł
+4null365null27 zł
 brutto
 Status dostępności
 21 dni
 Polecane
 BARTSCHER
 Barowa szafa chłodnicza 176 l, 900x530x850 mm | BARTSCHER, 700122
-3 813,00 zł
+3null813null00 zł
 brutto
 Najniższa cena:
-4 014,00 zł
+4null014null00 zł
 brutto
 Cena regularna:
-5 017,17 zł
+5null017null17 zł
 brutto
 Status dostępności
 5 dni
@@ -499,13 +499,13 @@ Informacje z karty produktu
 Polecane
 BARTSCHER
 Szafa chłodnicza z drzwiami przeszklonymi, 300 l, 440x705x1865 mm | BARTSCHER, 700812
-4 337,00 zł
+4null337null00 zł
 brutto
 Najniższa cena:
-4 566,00 zł
+4null566null00 zł
 brutto
 Cena regularna:
-5 707,20 zł
+5null707null20 zł
 brutto
 Status dostępności
 5 dni
@@ -513,33 +513,33 @@ Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza do napojów butelkowych z możliwością zabudowy, 600x615x830 mm, 130 l | LIEBHERR, Premium
-4 358,69 zł
+4null358null69 zł
 brutto
 Najniższa cena:
-4 359,00 zł
+4null359null00 zł
 brutto
 Cena regularna:
-5 127,87 zł
+5null127null87 zł
 brutto
 Status dostępności
 21 dni
 Polecane
 LIEBHERR
 Szafa chłodnicza do napojów butelkowych z możliwością zabudowy 600x615x830 mm, 130 l | LIEBHERR, Premium
-4 390,05 zł
+4null390null05 zł
 brutto
 Najniższa cena:
-4 390,05 zł
+4null390null05 zł
 brutto
 Cena regularna:
-5 164,77 zł
+5null164null77 zł
 brutto
 Status dostępności
 21 dni
 Polecane
 LIEBHERR
 Szafa chłodnicza chłodzona powietrzem obiegowym, 597x654x1684 mm, 327 l | LIEBHERR, MRFvc 3501
-4 488,27 zł
+4null488null27 zł
 brutto
 Status dostępności
 21 dni
@@ -547,13 +547,13 @@ Informacje z karty produktu
 Polecane
 BARTSCHER
 Barowa szafa chłodnicza 270 l, 1350x530x850 mm | BARTSCHER, 700123
-4 616,00 zł
+4null616null00 zł
 brutto
 Najniższa cena:
-4 859,00 zł
+4null859null00 zł
 brutto
 Cena regularna:
-6 073,74 zł
+6null073null74 zł
 brutto
 Status dostępności
 14 dni
@@ -561,7 +561,7 @@ Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza chłodzona powietrzem obiegowym z drzwiami przeszklonymi, 597x654x1684 mm, 347 l | LIEBHERR, MRFvc 3511
-5 103,27 zł
+5null103null27 zł
 brutto
 Status dostępności
 21 dni
@@ -569,7 +569,7 @@ Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza chłodzona powietrzem obiegowym, 597x654x1884 mm, 377 l | LIEBHERR, MRFvc 4001
-5 103,27 zł
+5null103null27 zł
 brutto
 Status dostępności
 21 dni
@@ -577,20 +577,20 @@ Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza do napojów butelkowych z możliwością zabudowy 600x615x830 mm, 130 l | LIEBHERR, Premium
-5 216,00 zł
+5null216null00 zł
 brutto
 Najniższa cena:
-5 122,00 zł
+5null122null00 zł
 brutto
 Cena regularna:
-6 136,47 zł
+6null136null47 zł
 brutto
 Status dostępności
 21 dni
 Polecane
 LIEBHERR
 Szafa chłodnicza chłodzona powietrzem obiegowym z drzwiami przeszklonymi, 597x654x1884 mm, 400 l | LIEBHERR, MRFvc 4011
-5 349,27 zł
+5null349null27 zł
 brutto
 Status dostępności
 21 dni
@@ -598,7 +598,7 @@ Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza chłodzona powietrzem obiegowym, 747x769x1684 mm, 544 l | LIEBHERR, MRFvc 5501
-5 349,27 zł
+5null349null27 zł
 brutto
 Status dostępności
 21 dni
@@ -606,13 +606,13 @@ Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza, 597x654x1684 mm, 327 l | LIEBHERR, Perfection
-5 363,00 zł
+5null363null00 zł
 brutto
 Najniższa cena:
-5 841,33 zł
+5null841null33 zł
 brutto
 Cena regularna:
-6 308,67 zł
+6null308null67 zł
 brutto
 Status dostępności
 21 dni
@@ -620,7 +620,7 @@ Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza chłodzona powietrzem obiegowym z drzwiami przeszklonymi, 747x769x1684 mm, 369 l | LIEBHERR, MRFvc 5511
-5 841,27 zł
+5null841null27 zł
 brutto
 Status dostępności
 21 dni
@@ -628,13 +628,13 @@ Informacje z karty produktu
 Polecane
 LIEBHERR
 Szafa chłodnicza, 597x654x1884 mm, 377 l | LIEBHERR, Perfection
-5 896,00 zł
+5null896null00 zł
 brutto
 Najniższa cena:
-6 425,58 zł
+6null425null58 zł
 brutto
 Cena regularna:
-6 935,97 zł
+6null935null97 zł
 brutto
 Status dostępności
 21 dni
